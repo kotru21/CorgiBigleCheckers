@@ -1,4 +1,4 @@
-import { Suspense, useState, useRef, useMemo } from "react";
+import { Suspense, useState, useRef, useMemo, useEffect } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -483,7 +483,7 @@ function Board3DContent({
           hoveredSquare &&
           hoveredSquare.row === row &&
           hoveredSquare.col === col;
-
+        
         // Проверяем, есть ли фигура с обязательным захватом на этой клетке
         const hasCapturePiece = piecesWithCaptures.some(
           (piece) => piece.row === row && piece.col === col
@@ -591,7 +591,14 @@ function Board3DContent({
 
   // рендеринг сцены
   return (
-    <>
+    <Canvas
+      shadows
+      dpr={[1, 1.5]} // ограничиваем максимальный DPR для производительности
+      performance={{ min: 0.5 }} // разрешаем Three.js понижать качество при низкой производительности
+      gl={{
+        antialias: true,
+        powerPreference: "high-performance",
+      }}>
       <PerspectiveCamera makeDefault position={[0, 5, 7]} fov={50} />
       <OrbitControls
         enableZoom={true}
@@ -603,14 +610,14 @@ function Board3DContent({
       <Renderer />
       <SimpleEnvironment />
 
-      {/* Мониторинг производительности */}
+      {/* Добавляем монитор производительности */}
       <PerformanceMonitor onPerformanceChange={handlePerformanceChange} />
 
-      {/* Подвесной компонент для ленивой загрузки */}
+      {/* Используем наш адаптивный компонент неба */}
+      <SkyWithCloudsAndSun performanceMode={performanceMode} />
+
       <Suspense fallback={null}>
-        {/* Рендеринг доски */}
         <Board renderBoardSquares={renderBoardSquares} />
-        <SkyWithCloudsAndSun performanceMode={performanceMode} />
 
         {/* тени */}
         <ContactShadows
@@ -621,9 +628,7 @@ function Board3DContent({
           blur={1.5}
           far={4.5}
           resolution={256}
-        />
-
-        {/* Мемоизированные фигуры */}
+        />        {/* Мемоизированные фигуры */}
         {renderPieces}
       </Suspense>
 

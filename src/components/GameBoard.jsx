@@ -1,7 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { Board3D } from "./Board3D";
 import { useGame } from "../contexts/GameContext.jsx";
-import { getValidMoves, executeMove } from "../services/MoveService";
+import {
+  getValidMovesWithCapturePriority,
+  executeMove,
+  getPiecesWithCaptures,
+} from "../services/MoveService";
 import { checkGameStatus, createInitialBoard } from "../services/BoardService";
 import { PLAYER, PLAYER_KING } from "../models/Constants";
 import { useBotAI } from "../hooks/useBotAI"; // Добавляем импорт хука для бота
@@ -23,7 +27,7 @@ export function GameBoard({ onReturnToMenu }) {
   } = useGame();
 
   // Подключаем AI бота
-  const { makeBotMove } = useBotAI();
+  useBotAI();
 
   const [performanceMode, setPerformanceMode] = useState("high");
   const [showFpsInfo, setShowFpsInfo] = useState(false);
@@ -38,7 +42,6 @@ export function GameBoard({ onReturnToMenu }) {
       setPerformanceMode(mode);
     }
   };
-
   // Выбор фигуры или ход
   const handlePieceSelect = (row, col) => {
     // Если игра окончена, ничего не делаем
@@ -56,36 +59,17 @@ export function GameBoard({ onReturnToMenu }) {
       const isValidMove = validMoves.some(
         (move) => move.row === row && move.col === col
       );
-
       if (isValidMove) {
-        // Находим информацию о ходе (для определения взятых фигур)
-        const moveInfo = validMoves.find(
-          (move) => move.row === row && move.col === col
-        );
-        const captured = moveInfo.captured || [];
-
-        // Выполняем ход с учетом взятых фигур
+        // Выполняем ход
         const newBoard = executeMove(
           board,
           selectedPiece.row,
           selectedPiece.col,
           row,
-          col,
-          captured
+          col
         );
 
         setBoard(newBoard);
-
-        // Проверяем, есть ли возможность для еще одного взятия той же фигурой
-        if (captured.length > 0) {
-          const { captures } = getValidMoves(newBoard, row, col);
-
-          if (captures.length > 0) {
-            setSelectedPiece({ row, col });
-            setValidMoves(captures);
-            return;
-          }
-        }
 
         // Сбрасываем выбор и передаем ход боту
         setSelectedPiece(null);
@@ -100,14 +84,21 @@ export function GameBoard({ onReturnToMenu }) {
         }
       } else if (isPlayerPiece) {
         // Если выбрана другая фигура игрока, выбираем ее
-        const { moves, captures } = getValidMoves(board, row, col);
+        const { moves, mustCapture } = getValidMovesWithCapturePriority(
+          board,
+          row,
+          col
+        );
         setSelectedPiece({ row, col });
+        setValidMoves(moves);
 
-        // Если есть возможность взятия, показываем только взятия
-        if (captures.length > 0) {
-          setValidMoves(captures);
+        // Показываем сообщение о обязательном захвате
+        if (mustCapture && moves.length === 0) {
+          setGameMessage("У этой фигуры нет захватов. Выберите другую фигуру!");
+        } else if (mustCapture && moves.length > 0) {
+          setGameMessage("Захват обязателен! Выберите ход для захвата.");
         } else {
-          setValidMoves(moves);
+          setGameMessage("Выберите поле для хода");
         }
       } else {
         // Если выбрана пустая клетка или фигура бота, сбрасываем выбор
@@ -116,14 +107,21 @@ export function GameBoard({ onReturnToMenu }) {
       }
     } else if (isPlayerPiece) {
       // Выбираем фигуру игрока
-      const { moves, captures } = getValidMoves(board, row, col);
+      const { moves, mustCapture } = getValidMovesWithCapturePriority(
+        board,
+        row,
+        col
+      );
       setSelectedPiece({ row, col });
+      setValidMoves(moves);
 
-      // Если есть возможность взятия, показываем только взятия
-      if (captures.length > 0) {
-        setValidMoves(captures);
+      // Показываем сообщение о обязательном захвате
+      if (mustCapture && moves.length === 0) {
+        setGameMessage("У этой фигуры нет захватов. Выберите другую фигуру!");
+      } else if (mustCapture && moves.length > 0) {
+        setGameMessage("Захват обязателен! Выберите ход для захвата.");
       } else {
-        setValidMoves(moves);
+        setGameMessage("Выберите поле для хода");
       }
     }
   };
@@ -145,7 +143,6 @@ export function GameBoard({ onReturnToMenu }) {
       <div className="absolute top-2 left-2 z-10 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-md text-white font-medium">
         {gameMessage}
       </div>
-
       {/* Индикатор производительности - обновляем, чтобы отображать текущий FPS из состояния */}
       <div
         className="absolute mr-12 top-2 right-20 z-10 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-md text-white font-medium cursor-pointer"
@@ -160,21 +157,18 @@ export function GameBoard({ onReturnToMenu }) {
           }`}></span>
         {showFpsInfo ? `${currentFps} FPS` : "Производительность"}
       </div>
-
       {/* Кнопка возврата в меню - теперь использует переданную функцию */}
       <button
         onClick={onReturnToMenu}
         className="absolute top-2 right-2 z-10 px-3 py-1 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-md text-white transition-colors">
         Меню
       </button>
-
       {/* Игровая подсказка */}
       {playerTurn && !gameOver && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 px-4 py-2 bg-black/40 backdrop-blur-sm rounded-md text-white text-sm">
           {selectedPiece ? "Выберите поле для хода" : "Выберите бигля для хода"}
         </div>
-      )}
-
+      )}{" "}
       {/* Доска на весь экран */}
       <div className="w-full h-full">
         <Board3D
@@ -183,9 +177,11 @@ export function GameBoard({ onReturnToMenu }) {
           selectedPiece={selectedPiece}
           validMoves={validMoves}
           onPerformanceData={handlePerformanceData}
+          piecesWithCaptures={
+            playerTurn ? getPiecesWithCaptures(board, true) : []
+          }
         />
       </div>
-
       {/* Показ статуса окончания игры */}
       {gameOver && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-20">

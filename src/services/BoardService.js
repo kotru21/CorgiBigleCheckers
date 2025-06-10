@@ -6,7 +6,7 @@ import {
   BOT_KING,
   PLAYER_KING,
 } from "../models/Constants";
-import { getValidMoves, executeMove } from "./MoveService";
+import { getValidMovesWithCapturePriority, executeMove } from "./MoveService";
 
 export const createInitialBoard = () => {
   const board = Array(BOARD_SIZE)
@@ -37,16 +37,8 @@ export const createInitialBoard = () => {
 };
 
 export const movePiece = (board, fromRow, fromCol, toRow, toCol) => {
-  // Получаем информацию о возможном взятии
-  const { captures } = getValidMoves(board, fromRow, fromCol);
-  const move = captures.find(
-    (move) => move.row === toRow && move.col === toCol
-  );
-
-  const captured = move ? move.captured : [];
-
   // Используем executeMove из MoveService для единообразной логики
-  return executeMove(board, fromRow, fromCol, toRow, toCol, captured);
+  return executeMove(board, fromRow, fromCol, toRow, toCol);
 };
 
 export const checkGameStatus = (board) => {
@@ -64,18 +56,16 @@ export const checkGameStatus = (board) => {
 
   if (botPieces === 0) return PLAYER;
   if (playerPieces === 0) return BOT;
-
   // Проверяем, есть ли у игроков возможные ходы
   let botHasMoves = false;
   let playerHasMoves = false;
-
   // Проверяем, есть ли ходы у бота
   for (let row = 0; row < BOARD_SIZE && !botHasMoves; row++) {
     for (let col = 0; col < BOARD_SIZE && !botHasMoves; col++) {
       const piece = board[row][col];
       if (piece === BOT || piece === BOT_KING) {
-        const { moves, captures } = getValidMoves(board, row, col);
-        if (moves.length > 0 || captures.length > 0) {
+        const { moves } = getValidMovesWithCapturePriority(board, row, col);
+        if (moves.length > 0) {
           botHasMoves = true;
           break;
         }
@@ -88,8 +78,8 @@ export const checkGameStatus = (board) => {
     for (let col = 0; col < BOARD_SIZE && !playerHasMoves; col++) {
       const piece = board[row][col];
       if (piece === PLAYER || piece === PLAYER_KING) {
-        const { moves, captures } = getValidMoves(board, row, col);
-        if (moves.length > 0 || captures.length > 0) {
+        const { moves } = getValidMovesWithCapturePriority(board, row, col);
+        if (moves.length > 0) {
           playerHasMoves = true;
           break;
         }

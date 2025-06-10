@@ -40,7 +40,7 @@ export const getValidMoves = (board, row, col) => {
   const captures = [];
 
   // Проверяем, что это реальная фигура
-  if (piece === EMPTY) return { moves, captures };
+  if (piece === EMPTY) return { moves: [], captures: [] };
 
   const isPlayer = piece === PLAYER || piece === PLAYER_KING;
   const isKing = piece === PLAYER_KING || piece === BOT_KING;
@@ -52,73 +52,10 @@ export const getValidMoves = (board, row, col) => {
     ? playerDirections
     : botDirections;
 
-  // Проверяем обычные ходы
+  // Проверяем захваты и обычные ходы
   moveDirections.forEach(([rowDir, colDir]) => {
-    // Для дамок - многошаговые ходы
     if (isKing) {
-      let distance = 1;
-      while (true) {
-        const newRow = row + rowDir * distance;
-        const newCol = col + colDir * distance;
-
-        // Проверка выхода за границы доски
-        if (
-          newRow < 0 ||
-          newRow >= BOARD_SIZE ||
-          newCol < 0 ||
-          newCol >= BOARD_SIZE
-        ) {
-          break;
-        }
-
-        if (board[newRow][newCol] === EMPTY) {
-          moves.push({ row: newRow, col: newCol });
-          distance++;
-        } else {
-          break;
-        }
-      }
-    } else {
-      // Для обычных шашек - ход на 1 клетку
-      const newRow = row + rowDir;
-      const newCol = col + colDir;
-
-      // Проверка выхода за границы доски
-      if (
-        newRow < 0 ||
-        newRow >= BOARD_SIZE ||
-        newCol < 0 ||
-        newCol >= BOARD_SIZE
-      ) {
-        return;
-      }
-
-      if (board[newRow][newCol] === EMPTY) {
-        moves.push({ row: newRow, col: newCol });
-      }
-    }
-  });
-
-  // Проверяем возможные взятия
-  findAllCaptures(board, row, col, captures);
-
-  return { moves, captures };
-};
-
-export const findAllCaptures = (board, row, col, captures = []) => {
-  const piece = board[row][col];
-  if (piece === EMPTY) return captures;
-
-  const isPlayer = piece === PLAYER || piece === PLAYER_KING;
-  const isKing = piece === PLAYER_KING || piece === BOT_KING;
-
-  // Используем все направления для захвата, так как в турецких шашках
-  // можно брать во всех направлениях, даже если обычные шашки ходят только вперед
-  const captureDirections = kingDirections;
-
-  captureDirections.forEach(([rowDir, colDir]) => {
-    // Для дамок - многошаговые взятия
-    if (isKing) {
+      // Логика для дамок
       let distance = 1;
       let foundEnemy = false;
       let enemyRow = -1;
@@ -138,91 +75,94 @@ export const findAllCaptures = (board, row, col, captures = []) => {
           break;
         }
 
-        const targetPiece = board[newRow][newCol];
+        const cellPiece = board[newRow][newCol];
 
-        // Если нашли пустую клетку и до этого был враг
-        if (targetPiece === EMPTY && foundEnemy) {
-          captures.push({
-            row: newRow,
-            col: newCol,
-            captured: [{ row: enemyRow, col: enemyCol }],
-          });
+        if (cellPiece === EMPTY) {
+          if (!foundEnemy) {
+            // Обычный ход
+            moves.push({ row: newRow, col: newCol });
+          } else {
+            // Ход после захвата
+            captures.push({
+              row: newRow,
+              col: newCol,
+              capturedRow: enemyRow,
+              capturedCol: enemyCol,
+            });
+          }
+          distance++;
+        } else if (!foundEnemy && isEnemyPiece(cellPiece, isPlayer)) {
+          // Нашли вражескую фигуру
+          foundEnemy = true;
+          enemyRow = newRow;
+          enemyCol = newCol;
+          distance++;
+        } else {
+          // Встретили препятствие
           break;
         }
-
-        // Если встретили фигуру
-        if (targetPiece !== EMPTY) {
-          // Если это первая встреченная фигура и она вражеская
-          if (
-            !foundEnemy &&
-            ((isPlayer && (targetPiece === BOT || targetPiece === BOT_KING)) ||
-              (!isPlayer &&
-                (targetPiece === PLAYER || targetPiece === PLAYER_KING)))
-          ) {
-            foundEnemy = true;
-            enemyRow = newRow;
-            enemyCol = newCol;
-          } else {
-            // Если встретили вторую фигуру или свою - завершаем поиск
-            break;
-          }
-        }
-
-        distance++;
       }
     } else {
-      // Для обычных шашек - взятие через одну клетку
-      const enemyRow = row + rowDir;
-      const enemyCol = col + colDir;
+      // Логика для обычных шашек
+      const newRow = row + rowDir;
+      const newCol = col + colDir;
 
       // Проверка выхода за границы доски
       if (
-        enemyRow < 0 ||
-        enemyRow >= BOARD_SIZE ||
-        enemyCol < 0 ||
-        enemyCol >= BOARD_SIZE
+        newRow < 0 ||
+        newRow >= BOARD_SIZE ||
+        newCol < 0 ||
+        newCol >= BOARD_SIZE
       ) {
         return;
       }
 
-      const enemyPiece = board[enemyRow][enemyCol];
-      const isEnemy =
-        (isPlayer && (enemyPiece === BOT || enemyPiece === BOT_KING)) ||
-        (!isPlayer && (enemyPiece === PLAYER || enemyPiece === PLAYER_KING));
+      const cellPiece = board[newRow][newCol];
 
-      if (isEnemy) {
-        const landingRow = enemyRow + rowDir;
-        const landingCol = enemyCol + colDir;
+      if (cellPiece === EMPTY) {
+        // Обычный ход
+        moves.push({ row: newRow, col: newCol });
+      } else if (isEnemyPiece(cellPiece, isPlayer)) {
+        // Проверяем возможность захвата
+        const jumpRow = newRow + rowDir;
+        const jumpCol = newCol + colDir;
 
-        // Проверка выхода за границы доски и пустого места для приземления
         if (
-          landingRow >= 0 &&
-          landingRow < BOARD_SIZE &&
-          landingCol >= 0 &&
-          landingCol < BOARD_SIZE &&
-          board[landingRow][landingCol] === EMPTY
+          jumpRow >= 0 &&
+          jumpRow < BOARD_SIZE &&
+          jumpCol >= 0 &&
+          jumpCol < BOARD_SIZE &&
+          board[jumpRow][jumpCol] === EMPTY
         ) {
           captures.push({
-            row: landingRow,
-            col: landingCol,
-            captured: [{ row: enemyRow, col: enemyCol }],
+            row: jumpRow,
+            col: jumpCol,
+            capturedRow: newRow,
+            capturedCol: newCol,
           });
         }
       }
     }
   });
 
-  return captures;
+  // В турецких шашках захват обязателен - если есть захваты, возвращаем только их
+  if (captures.length > 0) {
+    return { moves: captures, captures, mustCapture: true };
+  }
+
+  return { moves, captures: [], mustCapture: false };
 };
 
-export const executeMove = (
-  board,
-  fromRow,
-  fromCol,
-  toRow,
-  toCol,
-  captured = []
-) => {
+// Вспомогательная функция для определения вражеской фигуры
+const isEnemyPiece = (piece, isPlayer) => {
+  if (isPlayer) {
+    return piece === BOT || piece === BOT_KING;
+  } else {
+    return piece === PLAYER || piece === PLAYER_KING;
+  }
+};
+
+export const executeMove = (board, fromRow, fromCol, toRow, toCol) => {
   const newBoard = board.map((row) => [...row]);
   const piece = newBoard[fromRow][fromCol];
 
@@ -230,10 +170,36 @@ export const executeMove = (
   newBoard[toRow][toCol] = piece;
   newBoard[fromRow][fromCol] = EMPTY;
 
-  // Удаление взятых фигур
-  captured.forEach(({ row, col }) => {
-    newBoard[row][col] = EMPTY;
-  });
+  // Проверяем, был ли это захват
+  const rowDiff = Math.abs(toRow - fromRow);
+  const colDiff = Math.abs(toCol - fromCol);
+  const isKing = piece === PLAYER_KING || piece === BOT_KING;
+
+  // Для обычных шашек захват происходит через одну клетку
+  if (!isKing && (rowDiff === 2 || colDiff === 2)) {
+    const capturedRow = fromRow + Math.sign(toRow - fromRow);
+    const capturedCol = fromCol + Math.sign(toCol - fromCol);
+    newBoard[capturedRow][capturedCol] = EMPTY;
+  }
+
+  // Для дамок нужно найти захваченную фигуру между начальной и конечной позициями
+  else if (isKing && (rowDiff > 1 || colDiff > 1)) {
+    const rowDir = Math.sign(toRow - fromRow);
+    const colDir = Math.sign(toCol - fromCol);
+
+    // Ищем захваченную фигуру между начальной и конечной позициями
+    let checkRow = fromRow + rowDir;
+    let checkCol = fromCol + colDir;
+
+    while (checkRow !== toRow || checkCol !== toCol) {
+      if (newBoard[checkRow][checkCol] !== EMPTY) {
+        newBoard[checkRow][checkCol] = EMPTY;
+        break; // Захватываем только одну фигуру за ход
+      }
+      checkRow += rowDir;
+      checkCol += colDir;
+    }
+  }
 
   // Проверка на превращение в дамку
   if (piece === PLAYER && toRow === 0) {
@@ -245,9 +211,72 @@ export const executeMove = (
   return newBoard;
 };
 
-// Метод для проверки множественных взятий
-export const getMultiCapture = (board, row, col) => {
-  const captures = [];
-  findAllCaptures(board, row, col, captures);
-  return captures.length > 0 ? captures : null;
+// Проверяем, есть ли обязательные захваты для указанного игрока
+export const hasCaptures = (board, isPlayer) => {
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const piece = board[row][col];
+
+      // Проверяем только фигуры нужного игрока
+      if (
+        (isPlayer && (piece === PLAYER || piece === PLAYER_KING)) ||
+        (!isPlayer && (piece === BOT || piece === BOT_KING))
+      ) {
+        const { captures } = getValidMoves(board, row, col);
+        if (captures.length > 0) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+};
+
+// Получаем только те фигуры, которые могут делать захваты
+export const getPiecesWithCaptures = (board, isPlayer) => {
+  const piecesWithCaptures = [];
+
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const piece = board[row][col];
+
+      // Проверяем только фигуры нужного игрока
+      if (
+        (isPlayer && (piece === PLAYER || piece === PLAYER_KING)) ||
+        (!isPlayer && (piece === BOT || piece === BOT_KING))
+      ) {
+        const { captures } = getValidMoves(board, row, col);
+        if (captures.length > 0) {
+          piecesWithCaptures.push({ row, col, captures });
+        }
+      }
+    }
+  }
+
+  return piecesWithCaptures;
+};
+
+// Модифицированная функция получения допустимых ходов с учетом обязательности захватов
+export const getValidMovesWithCapturePriority = (board, row, col) => {
+  const piece = board[row][col];
+  if (piece === EMPTY) return { moves: [], captures: [], mustCapture: false };
+
+  const isPlayer = piece === PLAYER || piece === PLAYER_KING;
+
+  // Проверяем, есть ли у этого игрока обязательные захваты на доске
+  const playerHasCaptures = hasCaptures(board, isPlayer);
+
+  if (playerHasCaptures) {
+    // Если есть обязательные захваты, возвращаем только захваты для этой фигуры
+    const { captures } = getValidMoves(board, row, col);
+    if (captures.length > 0) {
+      return { moves: captures, captures, mustCapture: true };
+    } else {
+      // Эта фигура не может делать захваты, но другие могут
+      return { moves: [], captures: [], mustCapture: true };
+    }
+  } else {
+    // Нет обязательных захватов - возвращаем обычные ходы
+    return getValidMoves(board, row, col);
+  }
 };

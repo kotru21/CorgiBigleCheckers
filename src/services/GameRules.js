@@ -90,10 +90,10 @@ const checkPlayerHasMoves = (board, isPlayer) => {
         (!isPlayer && (piece === BOT || piece === BOT_KING))
       ) {
         // Получаем все возможные ходы для этой фигуры
-        const { moves, captures } = getValidMoves(board, row, col);
+        const { moves } = getValidMovesWithCapturePriority(board, row, col);
 
         // Если есть хоть один возможный ход, игрок может ходить
-        if (moves.length > 0 || captures.length > 0) {
+        if (moves.length > 0) {
           return true;
         }
       }
@@ -105,6 +105,6 @@ const checkPlayerHasMoves = (board, isPlayer) => {
 };
 
 // Импортируем функцию из MoveService, чтобы избежать циклической зависимости
-import { getValidMoves } from "./MoveService";
+import { getValidMovesWithCapturePriority } from "./MoveService";
 
 export default turkishDraughtsRules;
