@@ -231,10 +231,9 @@ function EnhancedClouds({ count = 80 }) {
         count: Math.floor(count * 0.3),
         heightVariation: false,
       },
-    ];
-
-    // Генерируем группы облаков для каждой зоны
-    return positions.flatMap((zone) => {
+    ];    // Генерируем группы облаков для каждой зоны
+    let globalCloudIndex = 0; // Глобальный счетчик для уникальных ключей
+    return positions.flatMap((zone, zoneIndex) => {
       return Array.from({ length: zone.count }).map((_, i) => {
         // Выбираем случайный тип облака
         const cloudType = cloudTypes[randomInt(0, cloudTypes.length)];
@@ -266,9 +265,12 @@ function EnhancedClouds({ count = 80 }) {
         // Вращение для разнообразия
         const rotation = [0, randomRange(0, Math.PI * 2), 0];
 
+        // Создаем уникальный ключ, используя зоны и глобальный индекс
+        const uniqueKey = `cloud-zone${zoneIndex}-${i}-${globalCloudIndex++}`;
+
         return (
           <group
-            key={`cloud-${i}-${zone.minX}`}
+            key={uniqueKey}
             position={position}
             rotation={rotation}>
             <Cloud
