@@ -39,23 +39,22 @@ function Board({ renderBoardSquares }) {
     metalness: 0.1,
     color: "#8B5A2B",
   });
-
   return (
     <group>
-      <mesh position={[0, -0.1, 4.25]} receiveShadow castShadow>
-        <boxGeometry args={[9, 0.3, 0.5]} />
+      <mesh position={[0, -0.1, 5.25]} receiveShadow castShadow>
+        <boxGeometry args={[11, 0.3, 0.5]} />
         <primitive object={woodMaterial} attach="material" />
       </mesh>
-      <mesh position={[0, -0.1, -4.25]} receiveShadow castShadow>
-        <boxGeometry args={[9, 0.3, 0.5]} />
+      <mesh position={[0, -0.1, -5.25]} receiveShadow castShadow>
+        <boxGeometry args={[11, 0.3, 0.5]} />
         <primitive object={woodMaterial} attach="material" />
       </mesh>
-      <mesh position={[4.25, -0.1, 0]} receiveShadow castShadow>
-        <boxGeometry args={[0.5, 0.3, 9]} />
+      <mesh position={[5.25, -0.1, 0]} receiveShadow castShadow>
+        <boxGeometry args={[0.5, 0.3, 11]} />
         <primitive object={woodMaterial} attach="material" />
       </mesh>
-      <mesh position={[-4.25, -0.1, 0]} receiveShadow castShadow>
-        <boxGeometry args={[0.5, 0.3, 9]} />
+      <mesh position={[-5.25, -0.1, 0]} receiveShadow castShadow>
+        <boxGeometry args={[0.5, 0.3, 11]} />
         <primitive object={woodMaterial} attach="material" />
       </mesh>
 
@@ -464,14 +463,14 @@ function Board3DContent({
       onPerformanceData(fps, mode);
     }
   };
-
-  // Рендеринг клеток доски с чётким шахматным узором
+  // Рендеринг клеток доски с международным узором (только темные клетки используются)
   const renderBoardSquares = () => {
     const squares = [];
 
-    for (let row = 0; row < 8; row++) {
-      for (let col = 0; col < 8; col++) {
+    for (let row = 0; row < 10; row++) {
+      for (let col = 0; col < 10; col++) {
         const isEven = (row + col) % 2 === 0;
+        const isDarkSquare = !isEven; // Темные клетки - где используются шашки
         const isSelected =
           selectedPiece &&
           selectedPiece.row === row &&
@@ -520,12 +519,13 @@ function Board3DContent({
         squares.push(
           <mesh
             key={`square-${row}-${col}`}
-            position={[row - 3.5, -0.097, col - 3.5]}
+            position={[row - 4.5, -0.097, col - 4.5]}
             rotation={[-Math.PI / 2, 0, 0]}
             receiveShadow
             onClick={(e) => {
               e.stopPropagation();
-              if (isValidMove || board[row][col] !== EMPTY) {
+              // В международных шашках можем кликать только на темные клетки или если там есть фигуры
+              if (isDarkSquare || isValidMove || board[row][col] !== EMPTY) {
                 onPieceSelect(row, col);
               }
             }}
@@ -542,11 +542,11 @@ function Board3DContent({
           </mesh>
         );
 
-        // Добавляем тонкую рамку вокруг клетки для улучшения шашечного вида
+        // Добавляем тонкую рамку вокруг клетки для улучшения вида доски
         squares.push(
           <mesh
             key={`border-${row}-${col}`}
-            position={[row - 3.5, -0.096, col - 3.5]}
+            position={[row - 4.5, -0.096, col - 4.5]}
             rotation={[-Math.PI / 2, 0, 0]}>
             <meshBasicMaterial
               color={isEven ? "#774936" : "#E8D0AA"}
@@ -560,7 +560,6 @@ function Board3DContent({
 
     return squares;
   };
-
   // Отдельная функция для рендеринга фигур
   const renderPieces = useMemo(() => {
     return board.map((row, rowIndex) =>
@@ -576,7 +575,7 @@ function Board3DContent({
             key={`piece-${rowIndex}-${colIndex}`}
             type={type}
             isKing={isKing}
-            position={[rowIndex - 3.5, 0, colIndex - 3.5]}
+            position={[rowIndex - 4.5, 0, colIndex - 4.5]}
             onClick={() => onPieceSelect(rowIndex, colIndex)}
             isSelected={
               selectedPiece &&

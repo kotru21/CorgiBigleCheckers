@@ -7,12 +7,11 @@ import {
   EMPTY,
 } from "../models/Constants";
 import {
-  getValidMoves,
   getValidMovesWithCapturePriority,
   executeMove,
+  getAllPossibleCaptures,
 } from "./MoveService";
 
-// Обновленная функция оценки для турецких шашек
 export const evaluateBoard = (board) => {
   let score = 0;
   let botPieces = 0;
@@ -24,48 +23,47 @@ export const evaluateBoard = (board) => {
 
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
+      // Учитываем только темные клетки в международных шашках
+      if ((row + col) % 2 === 0) continue;
+
       const piece = board[row][col];
 
       if (piece === BOT) {
         botPieces++;
         // Стимулировать продвижение к превращению в дамку
         score += 10 + row;
-        // Центральное положение ценнее для контроля доски
-        const centerDistance = Math.abs(3.5 - col) + Math.abs(3.5 - row);
-        score += (4 - centerDistance) / 2;
+        // Центральное положение ценнее для контроля доски (10x10)
+        const centerDistance = Math.abs(4.5 - col) + Math.abs(4.5 - row);
+        score += (5 - centerDistance) / 2;
 
         // Подсчитываем возможности захвата для этой фигуры
-        const { captures } = getValidMoves(board, row, col);
-        botCaptures += captures.length;
+        const allCaptures = getAllPossibleCaptures(board, row, col);
+        botCaptures += allCaptures.length;
       } else if (piece === BOT_KING) {
         botKings++;
-        score += 30; // Дамки ценнее в турецких шашках из-за их большей подвижности
+        score += 30; // Дамки очень ценны в международных шашках
         // Центральное положение для дамок еще важнее
-        const centerDistance = Math.abs(3.5 - col) + Math.abs(3.5 - row);
-        score += 5 - centerDistance;
+        const centerDistance = Math.abs(4.5 - col) + Math.abs(4.5 - row);
+        score += 6 - centerDistance;
 
         // Подсчитываем возможности захвата для дамки
-        const { captures } = getValidMoves(board, row, col);
-        botCaptures += captures.length;
+        const allCaptures = getAllPossibleCaptures(board, row, col);
+        botCaptures += allCaptures.length;
       } else if (piece === PLAYER) {
         playerPieces++;
-        score -= 10 + (BOARD_SIZE - 1 - row); // То же для фигур игрока
-
-        // Подсчитываем возможности захвата игрока
-        const { captures } = getValidMoves(board, row, col);
-        playerCaptures += captures.length;
+        score -= 10 + (BOARD_SIZE - 1 - row); // То же для фигур игрока        // Подсчитываем возможности захвата игрока
+        const allCaptures = getAllPossibleCaptures(board, row, col);
+        playerCaptures += allCaptures.length;
       } else if (piece === PLAYER_KING) {
         playerKings++;
         score -= 30;
 
         // Подсчитываем возможности захвата для дамки игрока
-        const { captures } = getValidMoves(board, row, col);
-        playerCaptures += captures.length;
+        const allCaptures = getAllPossibleCaptures(board, row, col);
+        playerCaptures += allCaptures.length;
       }
     }
   }
-
-  // Дополнительные стратегические факторы
 
   // Преимущество при большем количестве фигур
   const pieceDifference = botPieces + botKings - (playerPieces + playerKings);
@@ -92,13 +90,16 @@ export const evaluateBoard = (board) => {
   return score;
 };
 
-// Получение всех возможных ходов для бота
+// Получение всех возможных ходов для бота (международные шашки)
 export const getAllBotMoves = (board) => {
   const moves = [];
 
   // Проходим по всей доске
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
+      // Учитываем только темные клетки
+      if ((row + col) % 2 === 0) continue;
+
       const piece = board[row][col];
 
       // Если это фигура бота
@@ -180,7 +181,7 @@ export const minimaxAlphaBeta = (board, depth, alpha, beta, isMaximizing) => {
     let minEval = Infinity;
 
     for (const move of moves) {
-      // Выполняем ход на временной доске
+      // ход на временной доске
       const newBoard = executeMove(
         board,
         move.fromRow,
@@ -215,13 +216,16 @@ export const minimaxAlphaBeta = (board, depth, alpha, beta, isMaximizing) => {
   }
 };
 
-// Получение всех возможных ходов для игрока (нужно для минимакса)
+// Получение всех возможных ходов для игрока (международные шашки)
 export const getAllPlayerMoves = (board) => {
   const moves = [];
 
-  // Проходим по всей доске
+  // Проход по всей доске
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
+      // Учитываем только темные клетки
+      if ((row + col) % 2 === 0) continue;
+
       const piece = board[row][col];
 
       // Если это фигура игрока

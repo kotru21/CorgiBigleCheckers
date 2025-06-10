@@ -1,5 +1,5 @@
 // src/models/Constants.js
-export const BOARD_SIZE = 8;
+export const BOARD_SIZE = 10;
 export const PLAYER = "beagle";
 export const BOT = "corgi";
 export const PLAYER_KING = "beagle-king";
