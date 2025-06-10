@@ -12,11 +12,11 @@ import {
 } from "@react-three/drei";
 import { PieceMesh } from "./PieceMesh";
 import React from "react";
-import { EMPTY } from "../../models/Constants";
+import { EMPTY, GAME_MODES } from "../../models/Constants";
 import * as THREE from "three";
 
 // Компонент доски
-function Board({ renderBoardSquares }) {
+function Board({ renderBoardSquares, gameMode }) {
   // Загружаем текстуры дерева из локальных файлов
   const woodTextures = useTexture({
     map: "/textures/wood_color.png",
@@ -39,8 +39,17 @@ function Board({ renderBoardSquares }) {
     metalness: 0.1,
     color: "#8B5A2B",
   });
+  // Специальные эффекты для режима вечеринки
+  if (gameMode === GAME_MODES.PARTY_MODE) {
+    woodMaterial.metalness = 0.6;
+    woodMaterial.roughness = 0.3;
+    woodMaterial.emissive = new THREE.Color("#8B4513");
+    woodMaterial.emissiveIntensity = 0.4; // Увеличиваем свечение рамки
+  }
+
   return (
     <group>
+      {/* Рамка доски */}
       <mesh position={[0, -0.1, 5.25]} receiveShadow castShadow>
         <boxGeometry args={[11, 0.3, 0.5]} />
         <primitive object={woodMaterial} attach="material" />
@@ -56,8 +65,67 @@ function Board({ renderBoardSquares }) {
       <mesh position={[-5.25, -0.1, 0]} receiveShadow castShadow>
         <boxGeometry args={[0.5, 0.3, 11]} />
         <primitive object={woodMaterial} attach="material" />
-      </mesh>
+      </mesh>{" "}
+      {/* Подсветка под доской для режима вечеринки */}
+      {gameMode === GAME_MODES.PARTY_MODE && (
+        <>
+          <pointLight
+            position={[4, -0.2, 4]}
+            intensity={1.2}
+            color="#ff0080"
+            distance={12}
+          />
+          <pointLight
+            position={[-4, -0.2, 4]}
+            intensity={1.2}
+            color="#00ff80"
+            distance={12}
+          />
+          <pointLight
+            position={[4, -0.2, -4]}
+            intensity={1.2}
+            color="#8000ff"
+            distance={12}
+          />
+          <pointLight
+            position={[-4, -0.2, -4]}
+            intensity={1.2}
+            color="#ff8000"
+            distance={12}
+          />
+          <pointLight
+            position={[0, -0.2, 0]}
+            intensity={1.0}
+            color="#00ffff"
+            distance={15}
+          />
 
+          <pointLight
+            position={[2, -0.1, 2]}
+            intensity={0.8}
+            color="#ff4080"
+            distance={8}
+          />
+          <pointLight
+            position={[-2, -0.1, 2]}
+            intensity={0.8}
+            color="#40ff80"
+            distance={8}
+          />
+          <pointLight
+            position={[2, -0.1, -2]}
+            intensity={0.8}
+            color="#8040ff"
+            distance={8}
+          />
+          <pointLight
+            position={[-2, -0.1, -2]}
+            intensity={0.8}
+            color="#ff8040"
+            distance={8}
+          />
+        </>
+      )}
       {renderBoardSquares()}
     </group>
   );
@@ -231,7 +299,7 @@ function EnhancedClouds({ count = 80 }) {
         count: Math.floor(count * 0.3),
         heightVariation: false,
       },
-    ];    // Генерируем группы облаков для каждой зоны
+    ]; // Генерируем группы облаков для каждой зоны
     let globalCloudIndex = 0; // Глобальный счетчик для уникальных ключей
     return positions.flatMap((zone, zoneIndex) => {
       return Array.from({ length: zone.count }).map((_, i) => {
@@ -269,10 +337,7 @@ function EnhancedClouds({ count = 80 }) {
         const uniqueKey = `cloud-zone${zoneIndex}-${i}-${globalCloudIndex++}`;
 
         return (
-          <group
-            key={uniqueKey}
-            position={position}
-            rotation={rotation}>
+          <group key={uniqueKey} position={position} rotation={rotation}>
             <Cloud
               args={cloudType.args}
               opacity={opacity}
@@ -287,8 +352,111 @@ function EnhancedClouds({ count = 80 }) {
       });
     });
   }, [count]); // Зависимость только от количества облаков
-
   return <group>{clouds}</group>;
+}
+
+// Простой дискобол для режима вечеринки
+function DiscoBall({ position, scale = 1 }) {
+  const discoBallRef = useRef();
+
+  // Простая анимация вращения
+  useFrame((_, delta) => {
+    if (discoBallRef.current) {
+      discoBallRef.current.rotation.y += delta * 0.3;
+      discoBallRef.current.rotation.x += delta * 0.1;
+    }
+  });
+
+  return (
+    <group ref={discoBallRef} position={position} scale={scale}>
+      {/* Основная сфера дискобола */}
+      <mesh>
+        <sphereGeometry args={[1.2, 20, 20]} />
+        <meshStandardMaterial
+          color="#f5f5f5"
+          metalness={0.9}
+          roughness={0.1}
+          envMapIntensity={1.5}
+        />
+      </mesh>
+
+      {[...Array(16)].map((_, i) => {
+        const angle = (i / 16) * Math.PI * 2;
+        const x = Math.cos(angle) * 0.9;
+        const z = Math.sin(angle) * 0.9;
+        return (
+          <mesh key={i} position={[x, 0, z]}>
+            <boxGeometry args={[0.15, 0.15, 0.15]} />
+            <meshStandardMaterial
+              color="#ffffff"
+              metalness={1.0}
+              roughness={0.0}
+              emissive="#404040"
+              emissiveIntensity={0.2}
+            />
+          </mesh>
+        );
+      })}
+
+      {/* Дополнительные зеркальные элементы на полюсах */}
+      {[...Array(8)].map((_, i) => {
+        const angle = (i / 8) * Math.PI * 2;
+        const x = Math.cos(angle) * 0.6;
+        const z = Math.sin(angle) * 0.6;
+        return (
+          <mesh key={`top-${i}`} position={[x, 0.6, z]}>
+            <boxGeometry args={[0.12, 0.12, 0.12]} />
+            <meshStandardMaterial
+              color="#ffffff"
+              metalness={1.0}
+              roughness={0.0}
+              emissive="#202020"
+              emissiveIntensity={0.1}
+            />
+          </mesh>
+        );
+      })}
+
+      {/* Искры вокруг дискобола - увеличиваем количество */}
+      <Sparkles
+        count={25} // Увеличиваем количество
+        scale={[14, 14, 14]} // Увеличиваем размер
+        size={56} // Увеличиваем размер частиц
+        speed={0.01} // Ускоряем движение
+        color="#ffffff"
+        opacity={0.9} // Увеличиваем непрозрачность
+      />
+    </group>
+  );
+}
+
+// Функция для генерации дискобол вместо облаков
+function EnhancedDiscoBalls({ count = 8 }) {
+  // Уменьшаем количество
+  const discoBalls = useMemo(() => {
+    const randomRange = (min, max) => Math.random() * (max - min) + min;
+
+    const positions = [];
+
+    // Генерируем позиции для дискобол
+    for (let i = 0; i < count; i++) {
+      positions.push([
+        randomRange(-40, 40), // X - уменьшаем область
+        randomRange(8, 15), // Y (высота) - делаем ниже
+        randomRange(-40, 40), // Z - уменьшаем область
+      ]);
+    }
+
+    return positions.map((position, index) => (
+      <DiscoBall
+        key={`disco-${index}`}
+        position={position}
+        scale={randomRange(1.5, 2.5)} // Увеличиваем размер
+      />
+    ));
+  }, [count]);
+
+  return <group>{discoBalls}</group>;
 }
 
 // Обновление функции PerformanceMonitor
@@ -334,8 +502,47 @@ function PerformanceMonitor({ onPerformanceChange }) {
 }
 
 // Компонент неба с динамическими облаками и солнцем
-function SkyWithCloudsAndSun({ performanceMode }) {
+function SkyWithCloudsAndSun({ performanceMode, gameMode }) {
   const skyRef = useRef();
+  // Ночная тема для режима вечеринки
+  if (gameMode === GAME_MODES.PARTY_MODE) {
+    return (
+      <>
+        {/* Ночное звездное небо */}
+        <mesh position={[0, 0, 0]} scale={500}>
+          <sphereGeometry args={[1, 32, 32]} />
+          <meshBasicMaterial color="#0f0f23" side={THREE.BackSide} />
+        </mesh>
+
+        {/* Звезды */}
+        <Sparkles
+          count={200}
+          scale={[400, 400, 400]}
+          size={3}
+          speed={0.1}
+          color="#ffffff"
+          opacity={0.8}
+        />
+
+        {/* Луна */}
+        <group position={[80, 80, -80]}>
+          <mesh>
+            <sphereGeometry args={[8, 32, 32]} />
+            <meshBasicMaterial color="#f5f5dc" />
+          </mesh>
+          {/* Лунное свечение */}
+          <pointLight
+            position={[0, 0, 0]}
+            intensity={1.5}
+            color="#e6e6fa"
+            distance={100}
+          />
+        </group>
+        {/* Дискобол вместо облаков */}
+        <EnhancedDiscoBalls count={10} />
+      </>
+    );
+  }
 
   // Если включен режим производительности, вернем минимальную версию неба
   if (performanceMode === "low") {
@@ -414,7 +621,32 @@ function Renderer() {
 }
 
 // Улучшенное окружение
-function SimpleEnvironment() {
+function SimpleEnvironment({ gameMode }) {
+  // Ночная тема для режима вечеринки
+  if (gameMode === GAME_MODES.PARTY_MODE) {
+    return (
+      <>
+        {/* Ночное освещение с холодными тонами */}
+        <ambientLight intensity={0.3} color="#1a1a2e" />
+        <directionalLight
+          position={[5, 10, 5]}
+          intensity={0.4}
+          castShadow
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+          shadow-camera-far={15}
+          color="#7c7ce0"
+        />
+        {/* Луна */}
+        <pointLight position={[8, 15, 8]} intensity={0.8} color="#e6e6fa" />
+        {/* Дополнительные точечные источники для мистической атмосферы */}
+        <pointLight position={[-8, 8, -8]} intensity={0.4} color="#4b0082" />
+        <pointLight position={[8, 8, -8]} intensity={0.4} color="#8a2be2" />
+      </>
+    );
+  }
+
+  // Дневное освещение для остальных режимов
   return (
     <>
       <ambientLight intensity={0.8} color="#f5f9ff" />
@@ -440,6 +672,7 @@ function Board3DContent({
   validMoves,
   onPerformanceData,
   piecesWithCaptures = [],
+  gameMode, // Добавляем gameMode
 }) {
   const [hoveredSquare, setHoveredSquare] = useState(null);
   const [performanceMode, setPerformanceMode] = useState("high");
@@ -488,33 +721,65 @@ function Board3DContent({
         // Проверяем, есть ли фигура с обязательным захватом на этой клетке
         const hasCapturePiece = piecesWithCaptures.some(
           (piece) => piece.row === row && piece.col === col
-        );
-
-        // Создаём материалы с текстурами
+        ); // Создаём материалы с текстурами
         const material = new THREE.MeshStandardMaterial({
           map: isEven ? lightSquareTexture : darkSquareTexture,
           color: isEven ? "#E8D0AA" : "#774936",
           roughness: 0.7,
           metalness: 0.05,
-        });
+        }); // Специальные эффекты для режима вечеринки
+        if (gameMode === GAME_MODES.PARTY_MODE) {
+          // Добавляем более сильное свечение и металличность
+          material.metalness = 0.8;
+          material.roughness = 0.05;
 
-        // Модификация материала для особых состояний
+          // Базовое свечение для всех клеток с анимацией
+          const time = Date.now() * 0.003; // Ускоряем анимацию
+          const pulseIntensity =
+            0.6 + Math.sin(time + row * 0.7 + col * 0.7) * 0.4;
+
+          if (isEven) {
+            // Светлые клетки - очень яркое теплое свечение
+            material.emissive = new THREE.Color("#ff8040");
+            material.emissiveIntensity = pulseIntensity * 1.2;
+          } else {
+            // Темные клетки - очень яркое холодное свечение
+            material.emissive = new THREE.Color("#4080ff");
+            material.emissiveIntensity = pulseIntensity * 1.5;
+          }
+        } // Модификация материала для особых состояний
         if (isSelected) {
           material.color.set("#66BB66");
+          if (gameMode === GAME_MODES.PARTY_MODE) {
+            material.emissive.set("#00ff00");
+            material.emissiveIntensity = 0.8; // Увеличиваем свечение
+          }
         } else if (isValidMove) {
           material.color.set("#6699FF");
           material.transparent = true;
           material.opacity = 0.9;
+          if (gameMode === GAME_MODES.PARTY_MODE) {
+            material.emissive.set("#0066ff");
+            material.emissiveIntensity = 0.6; // Увеличиваем свечение
+          }
         } else if (hasCapturePiece) {
           // Подсветка фигур с обязательными захватами красным цветом
           material.color.set("#FF6666");
           material.transparent = true;
           material.opacity = 0.8;
+          if (gameMode === GAME_MODES.PARTY_MODE) {
+            material.emissive.set("#ff0000");
+            material.emissiveIntensity = 0.7; // Увеличиваем свечение
+          }
         } else if (isHovered) {
           if (isEven) {
             material.color.set("#F0DDB8");
           } else {
             material.color.set("#8A5A44");
+          }
+          if (gameMode === GAME_MODES.PARTY_MODE) {
+            material.emissive.set("#ffff00");
+            material.emissiveIntensity = 0.4; // Увеличиваем свечение при наведении
           }
         }
 
@@ -561,8 +826,7 @@ function Board3DContent({
     }
 
     return squares;
-  };
-  // Отдельная функция для рендеринга фигур
+  }; // Отдельная функция для рендеринга фигур
   const renderPieces = useMemo(() => {
     return board.map((row, rowIndex) =>
       row.map((cell, colIndex) => {
@@ -584,11 +848,12 @@ function Board3DContent({
               selectedPiece.row === rowIndex &&
               selectedPiece.col === colIndex
             }
+            gameMode={gameMode}
           />
         );
       })
     );
-  }, [board, selectedPiece, onPieceSelect]); // Зависит только от изменений доски и выбора
+  }, [board, selectedPiece, onPieceSelect, gameMode]); // Добавляем gameMode в зависимости
 
   // рендеринг сцены
   return (
@@ -600,19 +865,20 @@ function Board3DContent({
         minPolarAngle={Math.PI / 6}
         maxDistance={12}
         minDistance={5}
-      />
+      />{" "}
       <Renderer />
-      <SimpleEnvironment />
-
+      <SimpleEnvironment gameMode={gameMode} />
       {/* Мониторинг производительности */}
       <PerformanceMonitor onPerformanceChange={handlePerformanceChange} />
-
       {/* Подвесной компонент для ленивой загрузки */}
       <Suspense fallback={null}>
+        {" "}
         {/* Рендеринг доски */}
-        <Board renderBoardSquares={renderBoardSquares} />
-        <SkyWithCloudsAndSun performanceMode={performanceMode} />
-
+        <Board renderBoardSquares={renderBoardSquares} gameMode={gameMode} />
+        <SkyWithCloudsAndSun
+          performanceMode={performanceMode}
+          gameMode={gameMode}
+        />
         {/* тени */}
         <ContactShadows
           position={[0, -0.5, 0]}
@@ -623,13 +889,14 @@ function Board3DContent({
           far={4.5}
           resolution={256}
         />
-
         {/* Мемоизированные фигуры */}
         {renderPieces}
-      </Suspense>
-
-      {/* Настраиваем окружение с более солнечным пресетом */}
-      <Environment preset="sunset" intensity={0.2} />
+      </Suspense>{" "}
+      {/* Настраиваем окружение */}
+      <Environment
+        preset={gameMode === GAME_MODES.PARTY_MODE ? "night" : "sunset"}
+        intensity={gameMode === GAME_MODES.PARTY_MODE ? 0.1 : 0.2}
+      />
     </>
   );
 }
@@ -642,6 +909,7 @@ export function Board3D({
   validMoves,
   onPerformanceData,
   piecesWithCaptures = [],
+  gameMode, // Добавляем gameMode
 }) {
   return (
     <Canvas
@@ -659,6 +927,7 @@ export function Board3D({
         validMoves={validMoves}
         onPerformanceData={onPerformanceData}
         piecesWithCaptures={piecesWithCaptures}
+        gameMode={gameMode} // Передаем gameMode дальше
       />
     </Canvas>
   );

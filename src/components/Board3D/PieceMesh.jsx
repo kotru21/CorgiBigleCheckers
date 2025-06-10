@@ -3,7 +3,8 @@ import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import React from "react";
 import { usePieceAnimations } from "../../hooks/usePieceAnimations";
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, Sparkles } from "@react-three/drei";
+import { GAME_MODES } from "../../models/Constants";
 import * as THREE from "three";
 
 // Кешируем материалы для повторного использования
@@ -28,18 +29,27 @@ const crownMaterial = new THREE.MeshStandardMaterial({
 // Кеш моделей для предотвращения многократной загрузки
 const modelCache = {};
 
-export function PieceMesh({ type, position, isKing, onClick, isSelected }) {
+export function PieceMesh({
+  type,
+  position,
+  isKing,
+  onClick,
+  isSelected,
+  gameMode,
+}) {
   const groupRef = useRef();
   const [hovered, setHovered] = useState(false);
   const { currentHeight } = usePieceAnimations(isSelected);
 
-  // Загрузка моделей с использованием кеша
-  if (!modelCache[type]) {
-    const { scene } = useGLTF(`/models/${type}.glb`);
-    modelCache[type] = scene;
+  // Всегда загружаем модели (исправляем проблему с хуками)
+  const { scene: pieceScene } = useGLTF(`/models/${type}.glb`);
+  const { scene: crownScene } = useGLTF("/models/crown.glb");
 
+  // Кешируем модели
+  if (!modelCache[type]) {
+    modelCache[type] = pieceScene.clone();
     // Оптимизация материалов для всей модели
-    scene.traverse((child) => {
+    modelCache[type].traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
@@ -49,11 +59,9 @@ export function PieceMesh({ type, position, isKing, onClick, isSelected }) {
   }
 
   if (!modelCache["crown"]) {
-    const { scene } = useGLTF("/models/crown.glb");
-    modelCache["crown"] = scene;
-
+    modelCache["crown"] = crownScene.clone();
     // Оптимизация материалов короны
-    scene.traverse((child) => {
+    modelCache["crown"].traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
@@ -61,15 +69,23 @@ export function PieceMesh({ type, position, isKing, onClick, isSelected }) {
       }
     });
   }
-
   // Оптимизированная анимация
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (groupRef.current) {
       groupRef.current.position.y = currentHeight;
 
       // Анимация вращения только для выбранных биглей
       if ((hovered || isSelected) && type === "beagle") {
         groupRef.current.rotation.y += delta * (isSelected ? 1.0 : 0.5);
+      }
+
+      // Упрощенные эффекты для режима вечеринки
+      if (gameMode === GAME_MODES.PARTY_MODE) {
+        // Только легкое покачивание, без сложных вычислений
+        if (isSelected || hovered) {
+          groupRef.current.rotation.z =
+            Math.sin(state.clock.elapsedTime * 2) * 0.05;
+        }
       }
     }
   });
@@ -114,7 +130,6 @@ export function PieceMesh({ type, position, isKing, onClick, isSelected }) {
         <boxGeometry args={[0.8, 1, 0.8]} />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
-
       {/* Модель фигуры с поворотом для биглей */}
       <primitive
         object={modelCache[type].clone()}
@@ -122,7 +137,6 @@ export function PieceMesh({ type, position, isKing, onClick, isSelected }) {
         rotation={modelRotation} // Применяем поворот
         scale={3}
       />
-
       {/* Корона для королей */}
       {isKing && (
         <primitive
@@ -132,7 +146,6 @@ export function PieceMesh({ type, position, isKing, onClick, isSelected }) {
           scale={0.03}
         />
       )}
-
       {/* Свечение только для биглей */}
       {(isSelected || hovered) && type === "beagle" && (
         <pointLight
@@ -141,6 +154,18 @@ export function PieceMesh({ type, position, isKing, onClick, isSelected }) {
           color="#FFD700"
           distance={1}
         />
+      )}{" "}
+      {/* Упрощенные светящиеся эффекты для режима вечеринки */}
+      {gameMode === GAME_MODES.PARTY_MODE && (isSelected || hovered) && (
+        <>
+          {/* Только одно дополнительное освещение для выбранных фигур */}
+          <pointLight
+            position={[0, 0.8, 0]}
+            intensity={0.4}
+            color={type === "beagle" ? "#00BFFF" : "#FF69B4"}
+            distance={1.8}
+          />
+        </>
       )}
     </group>
   );

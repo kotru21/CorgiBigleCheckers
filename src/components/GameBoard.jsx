@@ -8,7 +8,7 @@ import {
 } from "../services/MoveService";
 import { checkGameStatus, createInitialBoard } from "../services/BoardService";
 import { PLAYER, PLAYER_KING } from "../models/Constants";
-import { useBotAI } from "../hooks/useBotAI"; // Добавляем импорт хука для бота
+import { useBotAI } from "../hooks/useBotAI";
 
 export function GameBoard({ onReturnToMenu }) {
   const {
@@ -24,6 +24,7 @@ export function GameBoard({ onReturnToMenu }) {
     setGameOver,
     gameMessage,
     setGameMessage,
+    gameMode, // Добавляем gameMode из контекста
   } = useGame();
 
   // Подключаем AI бота
@@ -180,6 +181,7 @@ export function GameBoard({ onReturnToMenu }) {
           piecesWithCaptures={
             playerTurn ? getPiecesWithCaptures(board, true) : []
           }
+          gameMode={gameMode} // Передаем gameMode в Board3D
         />
       </div>
       {/* Показ статуса окончания игры */}
