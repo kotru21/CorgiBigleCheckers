@@ -791,8 +791,8 @@ function Board3DContent({
             receiveShadow
             onClick={(e) => {
               e.stopPropagation();
-              // В международных шашках можем кликать только на темные клетки или если там есть фигуры
-              if (isDarkSquare || isValidMove || board[row][col] !== EMPTY) {
+              // В международных шашках можем кликать ТОЛЬКО на темные клетки
+              if (isDarkSquare) {
                 onPieceSelect(row, col);
               }
             }}

@@ -10,24 +10,26 @@ import {
 // Вспомогательная функция для проверки наличия ходов у игрока
 const checkPlayerHasMoves = (board, isPlayer) => {
   // Импортируем функцию динамически для избежания циклической зависимости
-  return import("./MoveService").then(({ getValidMovesWithCapturePriority }) => {
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      for (let col = 0; col < BOARD_SIZE; col++) {
-        const piece = board[row][col];
+  return import("./MoveService").then(
+    ({ getValidMovesWithCapturePriority }) => {
+      for (let row = 0; row < BOARD_SIZE; row++) {
+        for (let col = 0; col < BOARD_SIZE; col++) {
+          const piece = board[row][col];
 
-        if (
-          (isPlayer && (piece === PLAYER || piece === PLAYER_KING)) ||
-          (!isPlayer && (piece === BOT || piece === BOT_KING))
-        ) {
-          const { moves } = getValidMovesWithCapturePriority(board, row, col);
-          if (moves.length > 0) {
-            return true;
+          if (
+            (isPlayer && (piece === PLAYER || piece === PLAYER_KING)) ||
+            (!isPlayer && (piece === BOT || piece === BOT_KING))
+          ) {
+            const { moves } = getValidMovesWithCapturePriority(board, row, col);
+            if (moves.length > 0) {
+              return true;
+            }
           }
         }
       }
+      return false;
     }
-    return false;
-  });
+  );
 };
 
 // Синхронная версия для проверки наличия фигур

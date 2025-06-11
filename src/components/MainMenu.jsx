@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useGame } from "../contexts/GameContext";
 import { GAME_MODES } from "../models/Constants";
 import { createInitialBoard } from "../services/BoardService";
+import RulesModal from "./RulesModal";
 
 export function MainMenu({ onStartGame }) {
   const { setGameMode, setBoard, setPlayerTurn, setGameOver, setGameMessage } =
     useGame();
+  const [showRules, setShowRules] = useState(false);
 
   const handleSelectMode = (mode) => {
     setGameMode(mode);
@@ -79,8 +81,19 @@ export function MainMenu({ onStartGame }) {
               Ускоренный темп игры с быстрым ботом
             </span>
           </button>
+
+          <button
+            onClick={() => setShowRules(true)}
+            className="p-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            <span className="block text-lg font-bold">Правила игры</span>
+            <span className="text-sm opacity-80">
+              Узнайте как играть в международные шашки
+            </span>
+          </button>
         </div>
       </div>
+
+      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
     </div>
   );
 }

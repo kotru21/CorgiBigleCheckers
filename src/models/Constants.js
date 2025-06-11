@@ -13,47 +13,43 @@ export const GAME_MODES = {
   TURBO: "turbo",
 };
 
-// Добавляем константы для типов ходов
 export const MOVE_TYPES = {
   NORMAL: "normal",
   CAPTURE: "capture",
   MULTI_CAPTURE: "multi_capture",
 };
 
-// Константы для состояний игры
 export const GAME_STATES = {
   MENU: "menu",
   PLAYING: "playing",
   PAUSED: "paused",
   GAME_OVER: "game_over",
+  RULES_MODAL: "rules_modal",
 };
 
-// Константы для режимов производительности
 export const PERFORMANCE_MODES = {
   HIGH: "high",
   MEDIUM: "medium",
   LOW: "low",
 };
 
-// Константы для направлений движения
 export const DIRECTIONS = {
   PLAYER: [
     [-1, -1], // диагональ вверх-влево
-    [-1, 1],  // диагональ вверх-вправо
+    [-1, 1], // диагональ вверх-вправо
   ],
   BOT: [
-    [1, -1],  // диагональ вниз-влево
-    [1, 1],   // диагональ вниз-вправо
+    [1, -1], // диагональ вниз-влево
+    [1, 1], // диагональ вниз-вправо
   ],
   KING: [
     [-1, -1], // диагональ вверх-влево
-    [-1, 1],  // диагональ вверх-вправо
-    [1, -1],  // диагональ вниз-влево
-    [1, 1],   // диагональ вниз-вправо
+    [-1, 1], // диагональ вверх-вправо
+    [1, -1], // диагональ вниз-влево
+    [1, 1], // диагональ вниз-вправо
   ],
 };
 
-// Настройки игры
 export const GAME_CONFIG = {
   AI_DEPTH: {
     EASY: 2,
@@ -69,4 +65,29 @@ export const GAME_CONFIG = {
     REGULAR: 10,
     KING: 30,
   },
+  BOARD: {
+    SIZE: BOARD_SIZE,
+    DARK_SQUARES_ONLY: true,
+  },
+  PERFORMANCE: {
+    CACHE_SIZE_LIMIT: 1000,
+    FPS_TARGET: 60,
+    FPS_WARNING_THRESHOLD: 30,
+    FPS_CRITICAL_THRESHOLD: 15,
+  },
+};
+
+// Константы для валидации
+export const VALIDATION_RULES = {
+  MIN_BOARD_SIZE: 8,
+  MAX_BOARD_SIZE: 12,
+  MIN_PIECES_PER_SIDE: 12,
+  MAX_PIECES_PER_SIDE: 20,
+};
+
+// Константы для логирования
+export const LOG_CONFIG = {
+  ENABLED: true,
+  LEVEL: "INFO",
+  MAX_LOGS: 1000,
 };
