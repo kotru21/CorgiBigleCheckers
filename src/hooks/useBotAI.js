@@ -1,9 +1,9 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useGame } from "../contexts/GameContext.jsx";
 import { getBestMove } from "../services/AIservice";
 import { executeMove } from "../services/MoveService";
 import { checkGameStatus } from "../services/BoardService";
-import { PLAYER, BOT, GAME_MODES } from "../models/Constants";
+import { PLAYER, BOT, GAME_MODES, GAME_CONFIG } from "../models/Constants";
 
 export function useBotAI() {
   const {
@@ -17,52 +17,70 @@ export function useBotAI() {
     gameMode,
   } = useGame();
 
+  const timeoutRef = useRef(null);
+
   const handleGameOver = useCallback(
     (winner) => {
       setGameOver(true);
-      setGameMessage(
+      const message =
         winner === PLAYER
           ? "Вы победили! Бигли одержали верх над корги!"
-          : "Вы проиграли! Корги оказались хитрее!"
-      );
+          : "Вы проиграли! Корги оказались хитрее!";
+      setGameMessage(message);
     },
     [setGameOver, setGameMessage]
   );
 
+  // Очистка таймаута при размонтировании
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   // Логика хода бота
   const makeBotMove = useCallback(() => {
-    // Если игра окончена или ход игрока, не делаем ничего
     if (gameOver || playerTurn) return;
 
-    // Устанавливаем задержку для хода бота в зависимости от режима
-    const delay = gameMode === GAME_MODES.TURBO ? 300 : 1000;
+    // Очищаем предыдущий таймаут
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
-    setTimeout(() => {
-      // Определяем сложность (глубину поиска) в зависимости от режима
-      const depth = gameMode === GAME_MODES.TURBO ? 4 : 3; // Находим лучший ход
-      const bestMove = getBestMove(board, depth); // Изменено с findBestMove на getBestMove
+    const delay =
+      GAME_CONFIG.AI_DELAY[gameMode === GAME_MODES.TURBO ? "TURBO" : "NORMAL"];
+    const depth =
+      GAME_CONFIG.AI_DEPTH[gameMode === GAME_MODES.TURBO ? "TURBO" : "MEDIUM"];
 
-      if (bestMove) {
-        // Выполняем ход
-        const newBoard = executeMove(
-          board,
-          bestMove.fromRow,
-          bestMove.fromCol,
-          bestMove.toRow,
-          bestMove.toCol
-        );
+    timeoutRef.current = setTimeout(() => {
+      try {
+        const bestMove = getBestMove(board, depth);
 
-        setBoard(newBoard);
-        setPlayerTurn(true);
-        setGameMessage("Ваш ход!");
+        if (bestMove) {
+          const newBoard = executeMove(
+            board,
+            bestMove.fromRow,
+            bestMove.fromCol,
+            bestMove.toRow,
+            bestMove.toCol
+          );
 
-        // Проверяем состояние игры после хода бота
-        const gameStatus = checkGameStatus(newBoard);
-        if (gameStatus) {
-          handleGameOver(gameStatus);
+          setBoard(newBoard);
+          setPlayerTurn(true);
+          setGameMessage("Ваш ход!");
+
+          // Проверяем состояние игры после хода бота
+          const gameStatus = checkGameStatus(newBoard);
+          if (gameStatus) {
+            handleGameOver(gameStatus);
+          }
+        } else {
+          handleGameOver(PLAYER);
         }
-      } else {
-        // Если ботом не найден ход, это означает, что игрок победил
+      } catch (error) {
+        console.error("Ошибка при выполнении хода бота:", error);
         handleGameOver(PLAYER);
       }
     }, delay);
@@ -82,7 +100,7 @@ export function useBotAI() {
     if (!playerTurn && !gameOver) {
       makeBotMove();
     }
-  }, [playerTurn, gameOver, board, makeBotMove]);
+  }, [playerTurn, gameOver, makeBotMove]);
 
   return { makeBotMove };
 }

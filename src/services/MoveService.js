@@ -5,211 +5,245 @@ import {
   PLAYER,
   PLAYER_KING,
   EMPTY,
+  DIRECTIONS,
 } from "../models/Constants";
 
-// Направления движения для международных шашек (только диагонали)
-// Для шашек игрока направления вперед по диагонали
-const playerDirections = [
-  [-1, -1], // диагональ вверх-влево
-  [-1, 1], // диагональ вверх-вправо
-];
+// Вспомогательные функции
+const isEnemyPiece = (piece, isPlayer) => {
+  if (isPlayer) {
+    return piece === BOT || piece === BOT_KING;
+  } else {
+    return piece === PLAYER || piece === PLAYER_KING;
+  }
+};
 
-// Для шашек бота направления вперед по диагонали
-const botDirections = [
-  [1, -1], // диагональ вниз-влево
-  [1, 1], // диагональ вниз-вправо
-];
+const isValidPosition = (row, col) => {
+  return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+};
 
-// Все диагональные направления для дамок
-const kingDirections = [
-  [-1, -1], // диагональ вверх-влево
-  [-1, 1], // диагональ вверх-вправо
-  [1, -1], // диагональ вниз-влево
-  [1, 1], // диагональ вниз-вправо
-];
+const isDarkSquare = (row, col) => {
+  return (row + col) % 2 === 1;
+};
 
-// Функция для подсчета всех возможных захватов от данной позиции (для правила большинства)
-export const getAllPossibleCaptures = (
+const getPieceInfo = (piece) => {
+  const isPlayer = piece === PLAYER || piece === PLAYER_KING;
+  const isKing = piece === PLAYER_KING || piece === BOT_KING;
+  return { isPlayer, isKing };
+};
+
+const getMoveDirections = (isPlayer, isKing) => {
+  if (isKing) return DIRECTIONS.KING;
+  return isPlayer ? DIRECTIONS.PLAYER : DIRECTIONS.BOT;
+};
+
+// Создание временной доски для симуляции ходов
+const createTempBoard = (
   board,
-  row,
-  col,
-  visited = new Set()
+  fromRow,
+  fromCol,
+  toRow,
+  toCol,
+  capturedRow,
+  capturedCol
 ) => {
+  const tempBoard = board.map((r) => [...r]);
+  const piece = tempBoard[fromRow][fromCol];
+
+  tempBoard[toRow][toCol] = piece;
+  tempBoard[fromRow][fromCol] = EMPTY;
+
+  if (capturedRow !== undefined && capturedCol !== undefined) {
+    tempBoard[capturedRow][capturedCol] = EMPTY;
+  }
+
+  return tempBoard;
+};
+
+// Оптимизированная функция для поиска захватов
+export const getAllPossibleCaptures = (board, row, col, visited = new Set()) => {
   const piece = board[row][col];
   if (piece === EMPTY || visited.has(`${row}-${col}`)) return [];
 
   visited.add(`${row}-${col}`);
-  const isPlayer = piece === PLAYER || piece === PLAYER_KING;
-  const isKing = piece === PLAYER_KING || piece === BOT_KING;
-
-  const moveDirections = isKing
-    ? kingDirections
-    : isPlayer
-    ? playerDirections
-    : botDirections;
+  const { isPlayer, isKing } = getPieceInfo(piece);
+  const moveDirections = getMoveDirections(isPlayer, isKing);
   const allCaptures = [];
 
-  moveDirections.forEach(([rowDir, colDir]) => {
+  for (const [rowDir, colDir] of moveDirections) {
     if (isKing) {
-      // Логика для дамок
-      let distance = 1;
-      let foundEnemy = false;
-      let enemyRow = -1;
-      let enemyCol = -1;
-
-      while (true) {
-        const newRow = row + rowDir * distance;
-        const newCol = col + colDir * distance;
-
-        if (
-          newRow < 0 ||
-          newRow >= BOARD_SIZE ||
-          newCol < 0 ||
-          newCol >= BOARD_SIZE
-        ) {
-          break;
-        }
-
-        if ((newRow + newCol) % 2 === 0) {
-          distance++;
-          continue;
-        }
-
-        const cellPiece = board[newRow][newCol];
-
-        if (cellPiece === EMPTY) {
-          if (foundEnemy) {
-            // Можем сделать захват - создаем временную доску и ищем продолжения
-            const tempBoard = board.map((r) => [...r]);
-            tempBoard[newRow][newCol] = piece;
-            tempBoard[row][col] = EMPTY;
-            tempBoard[enemyRow][enemyCol] = EMPTY;
-
-            const continuedCaptures = getAllPossibleCaptures(
-              tempBoard,
-              newRow,
-              newCol,
-              new Set(visited)
-            );
-            allCaptures.push({
-              row: newRow,
-              col: newCol,
-              capturedRow: enemyRow,
-              capturedCol: enemyCol,
-              capturedPieces:
-                1 +
-                (continuedCaptures.length > 0
-                  ? Math.max(...continuedCaptures.map((c) => c.capturedPieces))
-                  : 0),
-              path: [
-                {
-                  row: newRow,
-                  col: newCol,
-                  capturedRow: enemyRow,
-                  capturedCol: enemyCol,
-                },
-              ].concat(
-                continuedCaptures.length > 0
-                  ? continuedCaptures.find(
-                      (c) =>
-                        c.capturedPieces ===
-                        Math.max(
-                          ...continuedCaptures.map((cc) => cc.capturedPieces)
-                        )
-                    ).path
-                  : []
-              ),
-            });
-          }
-          distance++;
-        } else if (!foundEnemy && isEnemyPiece(cellPiece, isPlayer)) {
-          foundEnemy = true;
-          enemyRow = newRow;
-          enemyCol = newCol;
-          distance++;
-        } else {
-          break;
-        }
-      }
+      // Логика для дамок - вынесена в отдельную функцию
+      const kingCaptures = findKingCaptures(
+        board,
+        row,
+        col,
+        rowDir,
+        colDir,
+        piece,
+        isPlayer,
+        visited
+      );
+      allCaptures.push(...kingCaptures);
     } else {
-      // Логика для простых шашек
-      const newRow = row + rowDir;
-      const newCol = col + colDir;
-
-      if (
-        newRow < 0 ||
-        newRow >= BOARD_SIZE ||
-        newCol < 0 ||
-        newCol >= BOARD_SIZE
-      ) {
-        return;
-      }
-
-      if ((newRow + newCol) % 2 === 0) {
-        return;
-      }
-
-      const cellPiece = board[newRow][newCol];
-
-      if (isEnemyPiece(cellPiece, isPlayer)) {
-        const jumpRow = newRow + rowDir;
-        const jumpCol = newCol + colDir;
-
-        if (
-          jumpRow >= 0 &&
-          jumpRow < BOARD_SIZE &&
-          jumpCol >= 0 &&
-          jumpCol < BOARD_SIZE &&
-          (jumpRow + jumpCol) % 2 === 1 &&
-          board[jumpRow][jumpCol] === EMPTY
-        ) {
-          // Создаем временную доску и ищем продолжения
-          const tempBoard = board.map((r) => [...r]);
-          tempBoard[jumpRow][jumpCol] = piece;
-          tempBoard[row][col] = EMPTY;
-          tempBoard[newRow][newCol] = EMPTY;
-
-          const continuedCaptures = getAllPossibleCaptures(
-            tempBoard,
-            jumpRow,
-            jumpCol,
-            new Set(visited)
-          );
-          allCaptures.push({
-            row: jumpRow,
-            col: jumpCol,
-            capturedRow: newRow,
-            capturedCol: newCol,
-            capturedPieces:
-              1 +
-              (continuedCaptures.length > 0
-                ? Math.max(...continuedCaptures.map((c) => c.capturedPieces))
-                : 0),
-            path: [
-              {
-                row: jumpRow,
-                col: jumpCol,
-                capturedRow: newRow,
-                capturedCol: newCol,
-              },
-            ].concat(
-              continuedCaptures.length > 0
-                ? continuedCaptures.find(
-                    (c) =>
-                      c.capturedPieces ===
-                      Math.max(
-                        ...continuedCaptures.map((cc) => cc.capturedPieces)
-                      )
-                  ).path
-                : []
-            ),
-          });
-        }
-      }
+      // Логика для простых шашек - вынесена в отдельную функцию
+      const regularCaptures = findRegularCaptures(
+        board,
+        row,
+        col,
+        rowDir,
+        colDir,
+        piece,
+        isPlayer,
+        visited
+      );
+      allCaptures.push(...regularCaptures);
     }
-  });
+  }
 
   return allCaptures;
+};
+
+// Отдельная функция для поиска захватов дамок
+const findKingCaptures = (
+  board,
+  row,
+  col,
+  rowDir,
+  colDir,
+  piece,
+  isPlayer,
+  visited
+) => {
+  const captures = [];
+  let distance = 1;
+  let foundEnemy = false;
+  let enemyRow = -1;
+  let enemyCol = -1;
+
+  while (true) {
+    const newRow = row + rowDir * distance;
+    const newCol = col + colDir * distance;
+
+    if (!isValidPosition(newRow, newCol) || !isDarkSquare(newRow, newCol)) {
+      if (!isDarkSquare(newRow, newCol)) {
+        distance++;
+        continue;
+      }
+      break;
+    }
+
+    const cellPiece = board[newRow][newCol];
+
+    if (cellPiece === EMPTY) {
+      if (foundEnemy) {
+        const tempBoard = createTempBoard(
+          board,
+          row,
+          col,
+          newRow,
+          newCol,
+          enemyRow,
+          enemyCol
+        );
+        const continuedCaptures = getAllPossibleCaptures(
+          tempBoard,
+          newRow,
+          newCol,
+          new Set(visited)
+        );
+
+        captures.push(
+          createCaptureMove(newRow, newCol, enemyRow, enemyCol, continuedCaptures)
+        );
+      }
+      distance++;
+    } else if (!foundEnemy && isEnemyPiece(cellPiece, isPlayer)) {
+      foundEnemy = true;
+      enemyRow = newRow;
+      enemyCol = newCol;
+      distance++;
+    } else {
+      break;
+    }
+  }
+
+  return captures;
+};
+
+// Отдельная функция для поиска захватов простых шашек
+const findRegularCaptures = (
+  board,
+  row,
+  col,
+  rowDir,
+  colDir,
+  piece,
+  isPlayer,
+  visited
+) => {
+  const captures = [];
+  const newRow = row + rowDir;
+  const newCol = col + colDir;
+
+  if (!isValidPosition(newRow, newCol) || !isDarkSquare(newRow, newCol)) {
+    return captures;
+  }
+
+  const cellPiece = board[newRow][newCol];
+
+  if (isEnemyPiece(cellPiece, isPlayer)) {
+    const jumpRow = newRow + rowDir;
+    const jumpCol = newCol + colDir;
+
+    if (
+      isValidPosition(jumpRow, jumpCol) &&
+      isDarkSquare(jumpRow, jumpCol) &&
+      board[jumpRow][jumpCol] === EMPTY
+    ) {
+      const tempBoard = createTempBoard(
+        board,
+        row,
+        col,
+        jumpRow,
+        jumpCol,
+        newRow,
+        newCol
+      );
+      const continuedCaptures = getAllPossibleCaptures(
+        tempBoard,
+        jumpRow,
+        jumpCol,
+        new Set(visited)
+      );
+
+      captures.push(
+        createCaptureMove(jumpRow, jumpCol, newRow, newCol, continuedCaptures)
+      );
+    }
+  }
+
+  return captures;
+};
+
+// Фабричная функция для создания объекта хода с захватом
+const createCaptureMove = (toRow, toCol, capturedRow, capturedCol, continuedCaptures) => {
+  const maxContinuedCaptures = continuedCaptures.length > 0 
+    ? Math.max(...continuedCaptures.map(c => c.capturedPieces)) 
+    : 0;
+    
+  const bestContinuation = continuedCaptures.find(
+    c => c.capturedPieces === maxContinuedCaptures
+  );
+
+  return {
+    row: toRow,
+    col: toCol,
+    capturedRow,
+    capturedCol,
+    capturedPieces: 1 + maxContinuedCaptures,
+    path: [
+      { row: toRow, col: toCol, capturedRow, capturedCol }
+    ].concat(bestContinuation?.path || []),
+  };
 };
 
 // Модифицированная функция getValidMoves с правилом большинства
@@ -238,10 +272,10 @@ export const getValidMoves = (board, row, col) => {
 
   // Если захватов нет, ищем обычные ходы
   const moveDirections = isKing
-    ? kingDirections
+    ? DIRECTIONS.KING
     : isPlayer
-    ? playerDirections
-    : botDirections;
+    ? DIRECTIONS.PLAYER
+    : DIRECTIONS.BOT;
 
   moveDirections.forEach(([rowDir, colDir]) => {
     if (isKing) {
@@ -291,15 +325,6 @@ export const getValidMoves = (board, row, col) => {
   });
 
   return { moves, captures: [], mustCapture: false };
-};
-
-// Вспомогательная функция для определения вражеской фигуры
-const isEnemyPiece = (piece, isPlayer) => {
-  if (isPlayer) {
-    return piece === BOT || piece === BOT_KING;
-  } else {
-    return piece === PLAYER || piece === PLAYER_KING;
-  }
 };
 
 export const executeMove = (board, fromRow, fromCol, toRow, toCol) => {
