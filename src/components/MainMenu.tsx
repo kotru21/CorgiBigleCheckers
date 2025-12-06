@@ -1,16 +1,21 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useGame } from "../contexts/GameContext";
 import { GAME_MODES } from "@shared/config/constants";
 import { createInitialBoard } from "../services/BoardService";
 import { getModeName } from "../utils/modeHelpers";
 import RulesModal from "./RulesModal";
+import type { GameMode } from "@shared/types/game.types";
 
-export function MainMenu({ onStartGame }) {
+interface MainMenuProps {
+  onStartGame: () => void;
+}
+
+export function MainMenu({ onStartGame }: MainMenuProps) {
   const { setGameMode, setBoard, setPlayerTurn, setGameOver, setGameMessage } =
     useGame();
   const [showRules, setShowRules] = useState(false);
 
-  const handleSelectMode = (mode) => {
+  const handleSelectMode = (mode: GameMode) => {
     setGameMode(mode);
     const newBoard = createInitialBoard();
     setBoard(newBoard);

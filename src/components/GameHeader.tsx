@@ -1,11 +1,16 @@
-import React from "react";
+interface GameHeaderProps {
+  onModeSelect: () => void;
+  onToggleFullscreen: () => void;
+  isFullscreen: boolean;
+  gameMessage: string;
+}
 
 export function GameHeader({
   onModeSelect,
   onToggleFullscreen,
   isFullscreen,
   gameMessage,
-}) {
+}: GameHeaderProps) {
   return (
     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-xl">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -25,12 +30,11 @@ export function GameHeader({
             className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 
                      text-white rounded-lg shadow-lg
                      transform transition-all duration-200 hover:scale-105">
-            На весь экран
+            {isFullscreen ? "Свернуть" : "На весь экран"}
           </button>
         </div>
       </div>
 
-      {/* Сообщение о состоянии игры */}
       <div className="mt-6 text-center min-h-16">
         <p
           className="text-xl font-semibold animate-[messageSlide_0.5s_ease-out] 

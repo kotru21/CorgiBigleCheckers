@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { Board3D } from "./Board3D";
-import { useGame } from "../contexts/GameContext.jsx";
+import { useGame } from "../contexts/GameContext";
 import RulesModal from "./RulesModal";
 import {
   getValidMovesWithCapturePriority,
@@ -8,16 +8,20 @@ import {
   getPiecesWithCaptures,
 } from "../services/MoveService";
 import { checkGameStatus, createInitialBoard } from "../services/BoardService";
-import {
-  PLAYER,
-  PLAYER_KING,
-  PERFORMANCE_MODES,
-} from "@shared/config/constants";
+import { PLAYER, PERFORMANCE_MODES } from "@shared/config/constants";
 import { useBotAI } from "../hooks/useBotAI";
 import { pieceUtils } from "../utils/gameHelpers";
 import { logger } from "../utils/logger";
+import type { Move, Player, GameMode } from "@shared/types/game.types";
 
-export function GameBoard({ onReturnToMenu }) {
+type PerformanceMode =
+  (typeof PERFORMANCE_MODES)[keyof typeof PERFORMANCE_MODES];
+
+interface GameBoardProps {
+  onReturnToMenu: () => void;
+}
+
+export function GameBoard({ onReturnToMenu }: GameBoardProps) {
   const {
     board,
     setBoard,
@@ -36,30 +40,35 @@ export function GameBoard({ onReturnToMenu }) {
 
   useBotAI();
 
-  const [performanceMode, setPerformanceMode] = useState(
+  const [performanceMode, setPerformanceMode] = useState<PerformanceMode>(
     PERFORMANCE_MODES.HIGH
   );
   const [showFpsInfo, setShowFpsInfo] = useState(false);
   const [currentFps, setCurrentFps] = useState(60);
   const [showRules, setShowRules] = useState(false);
 
-  // Ref для предотвращения множественных вызовов
   const boardCreationRef = useRef(false);
 
-  // Мемоизированное вычисление фигур с захватами с дебаунсом
   const piecesWithCaptures = useMemo(() => {
     try {
-      if (!playerTurn || !board) return [];
+      if (!playerTurn || !board)
+        {return [] as Array<{
+          row: number;
+          col: number;
+          captures: Move[];
+        }>;}
       return getPiecesWithCaptures(board, true);
     } catch (error) {
-      logger.error("Ошибка при получении фигур с захватами:", error.message);
-      return [];
+      logger.error(
+        "Ошибка при получении фигур с захватами:",
+        (error as Error).message
+      );
+      return [] as Array<{ row: number; col: number; captures: Move[] }>;
     }
   }, [board, playerTurn]);
 
-  // Функция для получения данных о производительности от Board3D
   const handlePerformanceData = useCallback(
-    (fps, mode) => {
+    (fps: number, mode: PerformanceMode) => {
       setCurrentFps(fps);
 
       if (mode !== performanceMode) {
@@ -69,9 +78,8 @@ export function GameBoard({ onReturnToMenu }) {
     [performanceMode]
   );
 
-  // Мемоизированная функция для обработки окончания игры
   const handleGameOver = useCallback(
-    (winner) => {
+    (winner: Player) => {
       try {
         setGameOver(true);
         const message =
@@ -81,21 +89,22 @@ export function GameBoard({ onReturnToMenu }) {
         setGameMessage(message);
         logger.info(`Игра окончена. Победитель: ${winner}`);
       } catch (error) {
-        logger.error("Ошибка при обработке окончания игры:", error.message);
+        logger.error(
+          "Ошибка при обработке окончания игры:",
+          (error as Error).message
+        );
       }
     },
     [setGameOver, setGameMessage]
   );
 
-  // Функция для сброса выбора
   const resetSelection = useCallback(() => {
     setSelectedPiece(null);
     setValidMoves([]);
   }, [setSelectedPiece, setValidMoves]);
 
-  // Функция для выбора фигуры
   const selectPiece = useCallback(
-    (row, col) => {
+    (row: number, col: number) => {
       try {
         const { moves, mustCapture } = getValidMovesWithCapturePriority(
           board,
@@ -103,7 +112,7 @@ export function GameBoard({ onReturnToMenu }) {
           col
         );
         setSelectedPiece({ row, col });
-        setValidMoves(moves);
+        setValidMoves([...moves]);
 
         let message = "Выберите поле для хода";
         if (mustCapture && moves.length === 0) {
@@ -114,17 +123,16 @@ export function GameBoard({ onReturnToMenu }) {
 
         setGameMessage(message);
       } catch (error) {
-        logger.error("Ошибка при выборе фигуры:", error.message);
+        logger.error("Ошибка при выборе фигуры:", (error as Error).message);
         setGameMessage("Ошибка при выборе фигуры. Попробуйте снова.");
       }
     },
     [board, setSelectedPiece, setValidMoves, setGameMessage]
   );
 
-  // Оптимизированная функция выбора фигуры или хода
   const handlePieceSelect = useCallback(
-    (row, col) => {
-      if (gameOver || !playerTurn) return;
+    (row: number, col: number) => {
+      if (gameOver || !playerTurn) {return;}
 
       try {
         const piece = board[row][col];
@@ -161,7 +169,10 @@ export function GameBoard({ onReturnToMenu }) {
           selectPiece(row, col);
         }
       } catch (error) {
-        logger.error("Ошибка при обработке выбора фигуры:", error.message);
+        logger.error(
+          "Ошибка при обработке выбора фигуры:",
+          (error as Error).message
+        );
         setGameMessage("Произошла ошибка. Попробуйте еще раз.");
       }
     },
@@ -180,10 +191,9 @@ export function GameBoard({ onReturnToMenu }) {
     ]
   );
 
-  // Функция для начала новой игры с предотвращением множественных вызовов
   const handleNewGame = useCallback(() => {
     try {
-      if (boardCreationRef.current) return;
+      if (boardCreationRef.current) {return;}
       boardCreationRef.current = true;
 
       const newBoard = createInitialBoard();
@@ -195,12 +205,11 @@ export function GameBoard({ onReturnToMenu }) {
       setValidMoves([]);
       logger.info("Начата новая игра");
 
-      // Сбрасываем флаг после небольшой задержки
       setTimeout(() => {
         boardCreationRef.current = false;
       }, 1000);
     } catch (error) {
-      logger.error("Ошибка при создании новой игры:", error.message);
+      logger.error("Ошибка при создании новой игры:", (error as Error).message);
       setGameMessage("Ошибка при создании новой игры.");
       boardCreationRef.current = false;
     }
@@ -213,13 +222,12 @@ export function GameBoard({ onReturnToMenu }) {
     setValidMoves,
   ]);
 
-  // Возврат в меню
   const handleReturnToMenu = useCallback(() => {
     try {
       logger.info("Возврат в главное меню");
       onReturnToMenu();
     } catch (error) {
-      logger.error("Ошибка при возврате в меню:", error.message);
+      logger.error("Ошибка при возврате в меню:", (error as Error).message);
     }
   }, [onReturnToMenu]);
 
@@ -227,15 +235,13 @@ export function GameBoard({ onReturnToMenu }) {
     <div
       id="chess-board-container"
       className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Статус игры */}
       <div className="absolute top-2 left-2 z-10 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-md text-white font-medium">
         {gameMessage}
       </div>
 
-      {/* Индикатор производительности */}
       <div
         className="absolute mr-12 top-2 right-36 z-10 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-md text-white font-medium cursor-pointer"
-        onClick={() => setShowFpsInfo(!showFpsInfo)}>
+        onClick={() => setShowFpsInfo((prev) => !prev)}>
         <span
           className={`inline-block w-3 h-3 rounded-full mr-2 ${
             performanceMode === "high"
@@ -247,28 +253,24 @@ export function GameBoard({ onReturnToMenu }) {
         {showFpsInfo ? `${currentFps} FPS` : "Производительность"}
       </div>
 
-      {/* Кнопка правил */}
       <button
         onClick={() => setShowRules(true)}
         className="absolute top-2 right-20 z-10 px-3 py-1 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-md text-white transition-colors">
         Правила
       </button>
 
-      {/* Кнопка возврата в меню */}
       <button
         onClick={handleReturnToMenu}
         className="absolute top-2 right-2 z-10 px-3 py-1 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-md text-white transition-colors">
         Меню
       </button>
 
-      {/* Игровая подсказка */}
       {playerTurn && !gameOver && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 px-4 py-2 bg-black/40 backdrop-blur-sm rounded-md text-white text-sm">
           {selectedPiece ? "Выберите поле для хода" : "Выберите бигля для хода"}
         </div>
       )}
 
-      {/* Доска на весь экран */}
       <div className="w-full h-full">
         <Board3D
           board={board}
@@ -277,11 +279,10 @@ export function GameBoard({ onReturnToMenu }) {
           validMoves={validMoves}
           onPerformanceData={handlePerformanceData}
           piecesWithCaptures={piecesWithCaptures}
-          gameMode={gameMode}
+          gameMode={gameMode as GameMode}
         />
       </div>
 
-      {/* Показ статуса окончания игры */}
       {gameOver && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-20">
           <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-2xl text-center max-w-md mx-4">
@@ -304,7 +305,6 @@ export function GameBoard({ onReturnToMenu }) {
         </div>
       )}
 
-      {/* Модальное окно правил */}
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
     </div>
   );

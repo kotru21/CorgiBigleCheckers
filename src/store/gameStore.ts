@@ -5,11 +5,10 @@ import type {
   Board,
   GameMode,
   Move,
-  Player,
   Position,
 } from "../shared/types/game.types";
 
-interface GameStore {
+export interface GameStore {
   board: Board;
   gameMode: GameMode;
   playerTurn: boolean; // true = player, false = bot
@@ -66,5 +65,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   switchTurn: () => set({ playerTurn: !get().playerTurn }),
 }));
 
-export const useGame = <T>(selector: (state: GameStore) => T): T =>
-  useGameStore(selector);
+// Правильная перегрузка хука без условного вызова
+export function useGame(): GameStore;
+export function useGame<T>(selector: (state: GameStore) => T): T;
+export function useGame<T>(selector?: (state: GameStore) => T): T | GameStore {
+  const store = useGameStore();
+  if (selector) {
+    return selector(store);
+  }
+  return store;
+}

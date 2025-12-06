@@ -17,7 +17,7 @@
       "@entities/*": ["./src/entities/*"],
       "@shared/*": ["./src/shared/*"]
     },
-    "allowJs": true,
+    "allowJs": false,
     "checkJs": false,
     "skipLibCheck": true,
     "resolveJsonModule": true,

@@ -18,8 +18,8 @@ export const pieceUtils = {
   isEmpty: (piece: PieceType) => piece === EMPTY,
 
   getPieceOwner: (piece: PieceType) => {
-    if (pieceUtils.isPlayerPiece(piece)) return "player" as const;
-    if (pieceUtils.isBotPiece(piece)) return "bot" as const;
+    if (pieceUtils.isPlayerPiece(piece)) {return "player" as const;}
+    if (pieceUtils.isBotPiece(piece)) {return "bot" as const;}
     return null;
   },
 };
@@ -53,10 +53,10 @@ export const boardUtils = {
     for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
         const piece = board[row][col];
-        if (piece === PLAYER) playerPieces++;
-        else if (piece === BOT) botPieces++;
-        else if (piece === PLAYER_KING) playerKings++;
-        else if (piece === BOT_KING) botKings++;
+        if (piece === PLAYER) {playerPieces++;}
+        else if (piece === BOT) {botPieces++;}
+        else if (piece === PLAYER_KING) {playerKings++;}
+        else if (piece === BOT_KING) {botKings++;}
       }
     }
 
@@ -184,11 +184,11 @@ export const performanceUtils = {
 
     return function executedFunction(...args: Parameters<T>) {
       const later = () => {
-        if (timeout) clearTimeout(timeout);
+        if (timeout) {clearTimeout(timeout);}
         func(...args);
       };
 
-      if (timeout) clearTimeout(timeout);
+      if (timeout) {clearTimeout(timeout);}
       timeout = setTimeout(later, wait);
     };
   },

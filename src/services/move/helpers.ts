@@ -26,7 +26,7 @@ export const getPieceInfo = (piece: string | null) => {
 };
 
 export const getMoveDirections = (isPlayer: boolean, isKing: boolean) => {
-  if (isKing) return DIRECTIONS.KING;
+  if (isKing) {return DIRECTIONS.KING;}
   return isPlayer ? DIRECTIONS.PLAYER : DIRECTIONS.BOT;
 };
 

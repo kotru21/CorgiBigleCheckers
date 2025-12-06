@@ -1,7 +1,10 @@
-import React from "react";
 import "./RulesModal.css";
 
-const RulesModal = ({ onClose }) => {
+interface RulesModalProps {
+  onClose: () => void;
+}
+
+const RulesModal = ({ onClose }: RulesModalProps) => {
   return (
     <div className="rules-modal-overlay">
       <div className="rules-modal">

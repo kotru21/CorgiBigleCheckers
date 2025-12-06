@@ -1,11 +1,4 @@
-import {
-  BOARD_SIZE,
-  BOT,
-  PLAYER,
-  EMPTY,
-  BOT_KING,
-  PLAYER_KING,
-} from "@shared/config/constants";
+import { BOARD_SIZE, BOT, PLAYER, EMPTY } from "@shared/config/constants";
 import { getValidMovesWithCapturePriority, executeMove } from "./MoveService";
 import { boardUtils, pieceUtils } from "../utils/gameHelpers";
 import { logger } from "../utils/logger";
@@ -66,8 +59,12 @@ export const checkGameStatus = (board: Board): PlayerType | null => {
     const { playerPieces, botPieces, playerKings, botKings } =
       boardUtils.countPieces(board);
 
-    if (botPieces + botKings === 0) return PLAYER as PlayerType;
-    if (playerPieces + playerKings === 0) return BOT as PlayerType;
+    if (botPieces + botKings === 0) {
+      return PLAYER as PlayerType;
+    }
+    if (playerPieces + playerKings === 0) {
+      return BOT as PlayerType;
+    }
 
     let botHasMoves = false;
     let playerHasMoves = false;
@@ -101,8 +98,12 @@ export const checkGameStatus = (board: Board): PlayerType | null => {
       }
     }
 
-    if (!botHasMoves) return PLAYER as PlayerType;
-    if (!playerHasMoves) return BOT as PlayerType;
+    if (!botHasMoves) {
+      return PLAYER as PlayerType;
+    }
+    if (!playerHasMoves) {
+      return BOT as PlayerType;
+    }
 
     return null;
   } catch (error) {

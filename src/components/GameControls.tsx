@@ -1,6 +1,5 @@
-import React from "react";
-import { useGame } from "../contexts/GameContext.jsx";
 import { createInitialBoard } from "../services/BoardService";
+import { useGame } from "../contexts/GameContext";
 
 export function GameControls() {
   const { setBoard, setGameOver, setPlayerTurn, setGameMessage } = useGame();

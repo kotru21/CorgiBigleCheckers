@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 export function GameInstructions() {
   const [expanded, setExpanded] = useState(false);
@@ -7,7 +7,7 @@ export function GameInstructions() {
     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-xl">
       <button
         className="flex justify-between items-center w-full"
-        onClick={() => setExpanded(!expanded)}>
+        onClick={() => setExpanded((prev) => !prev)}>
         <h2 className="text-2xl font-bold text-left bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
           Как играть в Международные Шашки
         </h2>

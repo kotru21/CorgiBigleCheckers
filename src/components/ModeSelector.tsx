@@ -1,14 +1,18 @@
-import React from "react";
-import { useGame } from "../contexts/GameContext.jsx";
+import { useGame } from "../contexts/GameContext";
 import { GAME_MODES } from "@shared/config/constants";
 import { createInitialBoard } from "../services/BoardService";
 import { getModeName } from "../utils/modeHelpers";
+import type { GameMode } from "@shared/types/game.types";
 
-export function ModeSelector({ onClose }) {
+interface ModeSelectorProps {
+  onClose: () => void;
+}
+
+export function ModeSelector({ onClose }: ModeSelectorProps) {
   const { setGameMode, setBoard, setPlayerTurn, setGameOver, setGameMessage } =
     useGame();
 
-  const handleSelectMode = (mode) => {
+  const handleSelectMode = (mode: GameMode) => {
     setGameMode(mode);
     const newBoard = createInitialBoard();
     setBoard(newBoard);
