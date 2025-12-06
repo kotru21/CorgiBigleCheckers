@@ -6,11 +6,7 @@ import {
   PLAYER_KING,
   EMPTY,
 } from "@shared/config/constants";
-import {
-  pieceUtils,
-  boardUtils,
-  validationUtils,
-} from "../../utils/gameHelpers";
+import { boardUtils, validationUtils } from "../../utils/gameHelpers";
 import { logger } from "../../utils/logger";
 import type { Board } from "@shared/types/game.types";
 
@@ -32,13 +28,9 @@ export const executeMove = (
 
   const rowDiff = Math.abs(toRow - fromRow);
   const colDiff = Math.abs(toCol - fromCol);
-  const isKing = pieceUtils.isKing(piece);
 
-  if (!isKing && (rowDiff === 2 || colDiff === 2)) {
-    const capturedRow = fromRow + Math.sign(toRow - fromRow);
-    const capturedCol = fromCol + Math.sign(toCol - fromCol);
-    newBoard[capturedRow][capturedCol] = EMPTY;
-  } else if (isKing && (rowDiff > 1 || colDiff > 1)) {
+  // Обработка захвата: если ход больше 1 клетки по диагонали
+  if (rowDiff === colDiff && rowDiff >= 2) {
     const rowDir = Math.sign(toRow - fromRow);
     const colDir = Math.sign(toCol - fromCol);
 

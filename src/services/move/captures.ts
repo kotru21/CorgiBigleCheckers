@@ -26,7 +26,8 @@ export const getAllPossibleCaptures = (
   try {
     visitedSet.add(`${row}-${col}`);
     const { isPlayer, isKing } = getPieceInfo(piece);
-    const directions = getMoveDirections(isPlayer, isKing);
+
+    const directions = getMoveDirections(isPlayer, true);
     const captures: Move[] = [];
 
     for (const [rowDir, colDir] of directions) {

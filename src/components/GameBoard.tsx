@@ -51,12 +51,13 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
 
   const piecesWithCaptures = useMemo(() => {
     try {
-      if (!playerTurn || !board)
-        {return [] as Array<{
+      if (!playerTurn || !board) {
+        return [] as Array<{
           row: number;
           col: number;
           captures: Move[];
-        }>;}
+        }>;
+      }
       return getPiecesWithCaptures(board, true);
     } catch (error) {
       logger.error(
@@ -132,18 +133,20 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
 
   const handlePieceSelect = useCallback(
     (row: number, col: number) => {
-      if (gameOver || !playerTurn) {return;}
+      if (gameOver || !playerTurn) {
+        return;
+      }
 
       try {
         const piece = board[row][col];
         const isPlayerPiece = pieceUtils.isPlayerPiece(piece);
 
         if (selectedPiece) {
-          const isValidMove = validMoves.some(
+          const selectedMove = validMoves.find(
             (move) => move.row === row && move.col === col
           );
 
-          if (isValidMove) {
+          if (selectedMove) {
             const newBoard = executeMove(
               board,
               selectedPiece.row,
@@ -152,6 +155,23 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
               col
             );
             setBoard(newBoard);
+
+            const wasCapture = selectedMove.capturedRow !== undefined;
+
+            if (wasCapture) {
+              const { moves: continuedCaptures, mustCapture } =
+                getValidMovesWithCapturePriority(newBoard, row, col);
+
+              if (mustCapture && continuedCaptures.length > 0) {
+                setSelectedPiece({ row, col });
+                setValidMoves([...continuedCaptures]);
+                setGameMessage(
+                  "Продолжайте взятие! Серия должна быть завершена."
+                );
+                return;
+              }
+            }
+
             resetSelection();
             setPlayerTurn(false);
             setGameMessage("Ход корги...");
@@ -188,12 +208,16 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
       handleGameOver,
       resetSelection,
       selectPiece,
+      setSelectedPiece,
+      setValidMoves,
     ]
   );
 
   const handleNewGame = useCallback(() => {
     try {
-      if (boardCreationRef.current) {return;}
+      if (boardCreationRef.current) {
+        return;
+      }
       boardCreationRef.current = true;
 
       const newBoard = createInitialBoard();
@@ -247,8 +271,8 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
             performanceMode === "high"
               ? "bg-green-500"
               : performanceMode === "medium"
-              ? "bg-yellow-500"
-              : "bg-red-500"
+                ? "bg-yellow-500"
+                : "bg-red-500"
           }`}></span>
         {showFpsInfo ? `${currentFps} FPS` : "Производительность"}
       </div>
