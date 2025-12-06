@@ -3,8 +3,8 @@ import { useGame } from "../contexts/GameContext";
 import { getBestMove } from "../services/AIservice";
 import { executeMove } from "../services/MoveService";
 import { checkGameStatus } from "../services/BoardService";
-import { GAME_CONFIG, GAME_MODES } from "../models/Constants";
-import { logger } from "../utils/logger.js";
+import { GAME_CONFIG, GAME_MODES } from "@shared/config/constants";
+import { logger } from "../utils/logger";
 
 export const useBotAI = () => {
   const {

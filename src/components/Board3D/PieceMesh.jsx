@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import React from "react";
 import { usePieceAnimations } from "../../hooks/usePieceAnimations";
 import { useGLTF, Sparkles } from "@react-three/drei";
-import { GAME_MODES } from "../../models/Constants";
+import { GAME_MODES } from "@shared/config/constants";
 import * as THREE from "three";
 
 // Кешируем материалы для повторного использования

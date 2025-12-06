@@ -8,10 +8,14 @@ import {
   getPiecesWithCaptures,
 } from "../services/MoveService";
 import { checkGameStatus, createInitialBoard } from "../services/BoardService";
-import { PLAYER, PLAYER_KING, PERFORMANCE_MODES } from "../models/Constants";
+import {
+  PLAYER,
+  PLAYER_KING,
+  PERFORMANCE_MODES,
+} from "@shared/config/constants";
 import { useBotAI } from "../hooks/useBotAI";
 import { pieceUtils } from "../utils/gameHelpers";
-import { logger } from "../utils/logger.js";
+import { logger } from "../utils/logger";
 
 export function GameBoard({ onReturnToMenu }) {
   const {

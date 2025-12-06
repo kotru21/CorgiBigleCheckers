@@ -3,32 +3,34 @@ const LOG_LEVELS = {
   WARN: 1,
   INFO: 2,
   DEBUG: 3,
-};
+} as const;
+
+type LogLevelKey = keyof typeof LOG_LEVELS;
+
+type LogLevelValue = (typeof LOG_LEVELS)[LogLevelKey];
 
 class Logger {
-  constructor(level = LOG_LEVELS.INFO) {
-    this.level = level;
-  }
+  constructor(private level: LogLevelValue = LOG_LEVELS.INFO) {}
 
-  error(message, ...args) {
+  error(message: string, ...args: unknown[]) {
     if (this.level >= LOG_LEVELS.ERROR) {
       console.error(`[ERROR] ${message}`, ...args);
     }
   }
 
-  warn(message, ...args) {
+  warn(message: string, ...args: unknown[]) {
     if (this.level >= LOG_LEVELS.WARN) {
       console.warn(`[WARN] ${message}`, ...args);
     }
   }
 
-  info(message, ...args) {
+  info(message: string, ...args: unknown[]) {
     if (this.level >= LOG_LEVELS.INFO) {
       console.info(`[INFO] ${message}`, ...args);
     }
   }
 
-  debug(message, ...args) {
+  debug(message: string, ...args: unknown[]) {
     if (this.level >= LOG_LEVELS.DEBUG) {
       console.log(`[DEBUG] ${message}`, ...args);
     }

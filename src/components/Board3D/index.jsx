@@ -12,7 +12,7 @@ import {
 } from "@react-three/drei";
 import { PieceMesh } from "./PieceMesh";
 import React from "react";
-import { EMPTY, GAME_MODES } from "../../models/Constants";
+import { EMPTY, GAME_MODES } from "@shared/config/constants";
 import * as THREE from "three";
 
 // Компонент доски
@@ -614,7 +614,7 @@ function Renderer() {
     //настройки рендеринга
     gl.shadowMap.enabled = true;
     gl.shadowMap.type = THREE.PCFSoftShadowMap;
-    gl.outputEncoding = THREE.sRGBEncoding;
+    gl.outputColorSpace = THREE.SRGBColorSpace;
   }, [gl]);
 
   return null;

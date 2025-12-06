@@ -5,43 +5,46 @@ import {
   PLAYER_KING,
   EMPTY,
   BOARD_SIZE,
-} from "../models/Constants.js";
+} from "@shared/config/constants";
+import { logger } from "./logger";
+import type { Board, PieceType } from "@shared/types/game.types";
 
 // Утилиты для работы с фигурами
 export const pieceUtils = {
-  isPlayerPiece: (piece) => piece === PLAYER || piece === PLAYER_KING,
-  isBotPiece: (piece) => piece === BOT || piece === BOT_KING,
-  isKing: (piece) => piece === PLAYER_KING || piece === BOT_KING,
-  isEmpty: (piece) => piece === EMPTY,
+  isPlayerPiece: (piece: PieceType) =>
+    piece === PLAYER || piece === PLAYER_KING,
+  isBotPiece: (piece: PieceType) => piece === BOT || piece === BOT_KING,
+  isKing: (piece: PieceType) => piece === PLAYER_KING || piece === BOT_KING,
+  isEmpty: (piece: PieceType) => piece === EMPTY,
 
-  getPieceOwner: (piece) => {
-    if (pieceUtils.isPlayerPiece(piece)) return "player";
-    if (pieceUtils.isBotPiece(piece)) return "bot";
+  getPieceOwner: (piece: PieceType) => {
+    if (pieceUtils.isPlayerPiece(piece)) return "player" as const;
+    if (pieceUtils.isBotPiece(piece)) return "bot" as const;
     return null;
   },
 };
 
 // Утилиты для работы с доской
 export const boardUtils = {
-  isValidPosition: (row, col) => {
+  isValidPosition: (row: number, col: number) => {
     return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
   },
 
-  isDarkSquare: (row, col) => {
+  isDarkSquare: (row: number, col: number) => {
     return (row + col) % 2 === 1;
   },
 
-  isValidSquare: (row, col) => {
+  isValidSquare: (row: number, col: number) => {
     return (
       boardUtils.isValidPosition(row, col) && boardUtils.isDarkSquare(row, col)
     );
   },
 
-  copyBoard: (board) => {
+  copyBoard: (board: Board): Board => {
     return board.map((row) => [...row]);
   },
 
-  countPieces: (board) => {
+  countPieces: (board: Board) => {
     let playerPieces = 0;
     let botPieces = 0;
     let playerKings = 0;
@@ -63,7 +66,13 @@ export const boardUtils = {
 
 // Утилиты для валидации
 export const validationUtils = {
-  validateMove: (board, fromRow, fromCol, toRow, toCol) => {
+  validateMove: (
+    board: Board,
+    fromRow: number,
+    fromCol: number,
+    toRow: number,
+    toCol: number
+  ) => {
     if (
       !boardUtils.isValidSquare(fromRow, fromCol) ||
       !boardUtils.isValidSquare(toRow, toCol)
@@ -82,7 +91,7 @@ export const validationUtils = {
     return true;
   },
 
-  validateBoard: (board) => {
+  validateBoard: (board: Board) => {
     if (!Array.isArray(board) || board.length !== BOARD_SIZE) {
       throw new Error("Неверный размер доски");
     }
@@ -96,20 +105,18 @@ export const validationUtils = {
     return true;
   },
 
-  validateInternationalDraughtsRules: (board) => {
+  validateInternationalDraughtsRules: (board: Board) => {
     try {
       validationUtils.validateBoard(board);
 
       let playerCount = 0;
       let botCount = 0;
 
-      // Проверяем, что фигуры стоят только на темных клетках
       for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
           const piece = board[row][col];
 
           if (piece !== EMPTY) {
-            // Все фигуры должны быть только на темных клетках
             if (!boardUtils.isDarkSquare(row, col)) {
               throw new Error(
                 `Фигура на светлой клетке (${row}, ${col}) - нарушение правил международных шашек`
@@ -125,7 +132,6 @@ export const validationUtils = {
         }
       }
 
-      // В начале игры должно быть по 20 фигур
       if (playerCount > 20 || botCount > 20) {
         throw new Error(
           "Превышено максимальное количество фигур для международных шашек"
@@ -136,7 +142,7 @@ export const validationUtils = {
     } catch (error) {
       logger.error(
         "Ошибка валидации правил международных шашек:",
-        error.message
+        (error as Error).message
       );
       throw error;
     }
@@ -145,47 +151,51 @@ export const validationUtils = {
 
 // Утилиты для производительности
 export const performanceUtils = {
-  memoize: (fn, keyGenerator = (...args) => JSON.stringify(args)) => {
-    const cache = new Map();
+  memoize: <T extends (...args: any[]) => any>(
+    fn: T,
+    keyGenerator: (...args: Parameters<T>) => string = (...args) =>
+      JSON.stringify(args)
+  ) => {
+    const cache = new Map<string, ReturnType<T>>();
 
-    return (...args) => {
+    return (...args: Parameters<T>) => {
       const key = keyGenerator(...args);
 
       if (cache.has(key)) {
-        return cache.get(key);
+        return cache.get(key) as ReturnType<T>;
       }
 
       const result = fn(...args);
       cache.set(key, result);
 
-      // Ограничиваем размер кэша
       if (cache.size > 1000) {
         const firstKey = cache.keys().next().value;
-        cache.delete(firstKey);
+        if (firstKey !== undefined) {
+          cache.delete(firstKey);
+        }
       }
 
       return result;
     };
   },
 
-  debounce: (func, wait) => {
-    let timeout;
+  debounce: <T extends (...args: any[]) => void>(func: T, wait: number) => {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
 
-    return function executedFunction(...args) {
+    return function executedFunction(...args: Parameters<T>) {
       const later = () => {
-        clearTimeout(timeout);
+        if (timeout) clearTimeout(timeout);
         func(...args);
       };
 
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
       timeout = setTimeout(later, wait);
     };
   },
 
-  // Новая функция throttle для ограничения частоты вызовов
-  throttle: (func, limit) => {
-    let inThrottle;
-    return function (...args) {
+  throttle: <T extends (...args: any[]) => void>(func: T, limit: number) => {
+    let inThrottle = false;
+    return function throttled(this: unknown, ...args: Parameters<T>) {
       if (!inThrottle) {
         func.apply(this, args);
         inThrottle = true;

@@ -5,23 +5,29 @@ import {
   PLAYER,
   PLAYER_KING,
   EMPTY,
-} from "../models/Constants";
+} from "@shared/config/constants";
 import {
   getValidMovesWithCapturePriority,
   executeMove,
   getAllPossibleCaptures,
 } from "./MoveService";
-import {
-  boardUtils,
-  pieceUtils,
-  performanceUtils,
-} from "../utils/gameHelpers.js";
-import { logger } from "../utils/logger.js";
+import { boardUtils, pieceUtils } from "../utils/gameHelpers";
+import { logger } from "../utils/logger";
+import type { Board, MinimaxResult } from "@shared/types/game.types";
 
-// Мемоизированная функция оценки доски
-export const evaluateBoard = performanceUtils.memoize((board) => {
+interface SearchMove {
+  fromRow: number;
+  fromCol: number;
+  toRow: number;
+  toCol: number;
+  isCapture?: boolean;
+  mustCapture?: boolean;
+}
+
+// Оценка доски без глобальной мемоизации (кеш в транспозиционной таблице)
+export const evaluateBoard = (board: Board): number => {
   try {
-    let score = 0; // Используем let вместо const
+    let score = 0;
     const { playerPieces, botPieces, playerKings, botKings } =
       boardUtils.countPieces(board);
     let botCaptures = 0;
@@ -34,9 +40,7 @@ export const evaluateBoard = performanceUtils.memoize((board) => {
         const piece = board[row][col];
 
         if (piece === BOT) {
-          // Стимулировать продвижение к превращению в дамку
           score += 10 + row;
-          // Центральное положение ценнее для контроля доски
           const centerDistance = Math.abs(4.5 - col) + Math.abs(4.5 - row);
           score += (5 - centerDistance) / 2;
 
@@ -81,19 +85,15 @@ export const evaluateBoard = performanceUtils.memoize((board) => {
       }
     }
 
-    // Преимущество при большем количестве фигур
     const pieceDifference = botPieces + botKings - (playerPieces + playerKings);
     score += pieceDifference * 5;
 
-    // Бонус за наличие дамок
     score += botKings * 10;
     score -= playerKings * 10;
 
-    // Бонус за возможности захвата
     score += botCaptures * 3;
     score -= playerCaptures * 2;
 
-    // Победа/поражение
     if (playerPieces + playerKings === 0) {
       score = 1000;
     }
@@ -103,14 +103,14 @@ export const evaluateBoard = performanceUtils.memoize((board) => {
 
     return score;
   } catch (error) {
-    logger.error("Ошибка при оценке доски:", error.message);
+    logger.error("Ошибка при оценке доски:", (error as Error).message);
     return 0;
   }
-});
+};
 
-// Мемоизированная функция получения ходов бота
-export const getAllBotMoves = performanceUtils.memoize((board) => {
-  const moves = [];
+// Получение ходов бота без глобального кэша
+export const getAllBotMoves = (board: Board): SearchMove[] => {
+  const moves: SearchMove[] = [];
 
   try {
     for (let row = 0; row < BOARD_SIZE; row++) {
@@ -139,25 +139,30 @@ export const getAllBotMoves = performanceUtils.memoize((board) => {
 
     return moves;
   } catch (error) {
-    logger.error("Ошибка при получении ходов бота:", error.message);
+    logger.error("Ошибка при получении ходов бота:", (error as Error).message);
     return [];
   }
-});
+};
 
-// Улучшенный алгоритм минимакс с транспозиционными таблицами
-const transpositionTable = new Map();
+const transpositionTable = new Map<string, MinimaxResult>();
 
-export const minimaxAlphaBeta = (board, depth, alpha, beta, isMaximizing) => {
+export const minimaxAlphaBeta = (
+  board: Board,
+  depth: number,
+  alpha: number,
+  beta: number,
+  isMaximizing: boolean
+): MinimaxResult => {
   const boardKey = JSON.stringify(board);
   const cacheKey = `${boardKey}-${depth}-${isMaximizing}`;
 
   if (transpositionTable.has(cacheKey)) {
-    return transpositionTable.get(cacheKey);
+    return transpositionTable.get(cacheKey)!;
   }
 
   try {
     if (depth === 0) {
-      const result = { score: evaluateBoard(board) };
+      const result: MinimaxResult = { score: evaluateBoard(board), move: null };
       transpositionTable.set(cacheKey, result);
       return result;
     }
@@ -167,12 +172,15 @@ export const minimaxAlphaBeta = (board, depth, alpha, beta, isMaximizing) => {
       : getAllPlayerMoves(board);
 
     if (moves.length === 0) {
-      const result = { score: isMaximizing ? -1000 : 1000 };
+      const result: MinimaxResult = {
+        score: isMaximizing ? -1000 : 1000,
+        move: null,
+      };
       transpositionTable.set(cacheKey, result);
       return result;
     }
 
-    let bestMove = null;
+    let bestMove: SearchMove | null = null;
 
     if (isMaximizing) {
       let maxEval = -Infinity;
@@ -205,7 +213,7 @@ export const minimaxAlphaBeta = (board, depth, alpha, beta, isMaximizing) => {
         }
       }
 
-      const result = { move: bestMove, score: maxEval };
+      const result: MinimaxResult = { move: bestMove, score: maxEval };
       transpositionTable.set(cacheKey, result);
       return result;
     } else {
@@ -239,19 +247,19 @@ export const minimaxAlphaBeta = (board, depth, alpha, beta, isMaximizing) => {
         }
       }
 
-      const result = { move: bestMove, score: minEval };
+      const result: MinimaxResult = { move: bestMove, score: minEval };
       transpositionTable.set(cacheKey, result);
       return result;
     }
   } catch (error) {
-    logger.error("Ошибка в алгоритме минимакс:", error.message);
+    logger.error("Ошибка в алгоритме минимакс:", (error as Error).message);
     return { move: null, score: 0 };
   }
 };
 
-// Мемоизированная функция получения ходов игрока
-export const getAllPlayerMoves = performanceUtils.memoize((board) => {
-  const moves = [];
+// Получение ходов игрока без глобального кэша
+export const getAllPlayerMoves = (board: Board): SearchMove[] => {
+  const moves: SearchMove[] = [];
 
   try {
     for (let row = 0; row < BOARD_SIZE; row++) {
@@ -280,14 +288,16 @@ export const getAllPlayerMoves = performanceUtils.memoize((board) => {
 
     return moves;
   } catch (error) {
-    logger.error("Ошибка при получении ходов игрока:", error.message);
+    logger.error(
+      "Ошибка при получении ходов игрока:",
+      (error as Error).message
+    );
     return [];
   }
-});
+};
 
-export const getBestMove = (board, depth) => {
+export const getBestMove = (board: Board, depth: number): SearchMove | null => {
   try {
-    // Очищаем кэш каждые 100 вызовов для предотвращения переполнения памяти
     if (transpositionTable.size > 1000) {
       transpositionTable.clear();
       logger.debug("Очищен кэш транспозиционных таблиц");
@@ -295,9 +305,12 @@ export const getBestMove = (board, depth) => {
 
     const result = minimaxAlphaBeta(board, depth, -Infinity, Infinity, true);
     logger.debug(`Найден лучший ход с оценкой: ${result.score}`);
-    return result.move;
+    return result.move as SearchMove | null;
   } catch (error) {
-    logger.error("Ошибка при получении лучшего хода:", error.message);
+    logger.error(
+      "Ошибка при получении лучшего хода:",
+      (error as Error).message
+    );
     return null;
   }
 };

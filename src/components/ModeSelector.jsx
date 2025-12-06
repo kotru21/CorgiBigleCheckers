@@ -1,7 +1,8 @@
 import React from "react";
 import { useGame } from "../contexts/GameContext.jsx";
-import { GAME_MODES } from "../models/Constants";
+import { GAME_MODES } from "@shared/config/constants";
 import { createInitialBoard } from "../services/BoardService";
+import { getModeName } from "../utils/modeHelpers";
 
 export function ModeSelector({ onClose }) {
   const { setGameMode, setBoard, setPlayerTurn, setGameOver, setGameMessage } =
@@ -15,21 +16,6 @@ export function ModeSelector({ onClose }) {
     setGameOver(false);
     setGameMessage(`Режим ${getModeName(mode)}! Ваш ход!`);
     onClose();
-  };
-
-  const getModeName = (mode) => {
-    switch (mode) {
-      case GAME_MODES.CLASSIC:
-        return "Классический";
-      case GAME_MODES.CRAZY_JUMPS:
-        return "Безумные прыжки";
-      case GAME_MODES.PARTY_MODE:
-        return "Вечеринка";
-      case GAME_MODES.TURBO:
-        return "Турбо";
-      default:
-        return "Неизвестный";
-    }
   };
 
   return (

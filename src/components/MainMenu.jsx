@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useGame } from "../contexts/GameContext";
-import { GAME_MODES } from "../models/Constants";
+import { GAME_MODES } from "@shared/config/constants";
 import { createInitialBoard } from "../services/BoardService";
+import { getModeName } from "../utils/modeHelpers";
 import RulesModal from "./RulesModal";
 
 export function MainMenu({ onStartGame }) {
@@ -17,21 +18,6 @@ export function MainMenu({ onStartGame }) {
     setGameOver(false);
     setGameMessage(`Режим ${getModeName(mode)}! Ваш ход!`);
     onStartGame();
-  };
-
-  const getModeName = (mode) => {
-    switch (mode) {
-      case GAME_MODES.CLASSIC:
-        return "Классический";
-      case GAME_MODES.CRAZY_JUMPS:
-        return "Безумные прыжки";
-      case GAME_MODES.PARTY_MODE:
-        return "Вечеринка";
-      case GAME_MODES.TURBO:
-        return "Турбо";
-      default:
-        return "Неизвестный";
-    }
   };
 
   return (
@@ -84,7 +70,7 @@ export function MainMenu({ onStartGame }) {
 
           <button
             onClick={() => setShowRules(true)}
-            className="p-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            className="p-3 bg-linear-to-r from-gray-600 to-gray-700 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
             <span className="block text-lg font-bold">Правила игры</span>
             <span className="text-sm opacity-80">
               Узнайте как играть в международные шашки

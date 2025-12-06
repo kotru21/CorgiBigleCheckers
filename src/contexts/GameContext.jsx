@@ -1,44 +1,12 @@
-import React, { createContext, useContext, useState } from "react";
-import { createInitialBoard } from "../services/BoardService";
-import { GAME_MODES } from "../models/Constants";
+import React from "react";
+import { useGameStore } from "../store/gameStore";
 
-const GameContext = createContext();
-
-export function useGame() {
-  return useContext(GameContext);
+// Совместимый API: useGame возвращает Zustand store (рекомендуется селектор)
+export function useGame(selector) {
+  return selector ? useGameStore(selector) : useGameStore();
 }
 
+// Провайдер прозрачный — оставлен для совместимости
 export function GameProvider({ children }) {
-  const [board, setBoard] = useState(createInitialBoard());
-  const [gameMode, setGameMode] = useState(GAME_MODES.CLASSIC);
-  const [playerTurn, setPlayerTurn] = useState(true);
-  const [selectedPiece, setSelectedPiece] = useState(null);
-  const [validMoves, setValidMoves] = useState([]);
-  const [gameOver, setGameOver] = useState(false);
-  const [gameMessage, setGameMessage] = useState(
-    "Ваш ход! Вы играете за Биглей."
-  );
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  // контекст для всех компонентов
-  const value = {
-    board,
-    setBoard,
-    gameMode,
-    setGameMode,
-    playerTurn,
-    setPlayerTurn,
-    selectedPiece,
-    setSelectedPiece,
-    validMoves,
-    setValidMoves,
-    gameOver,
-    setGameOver,
-    gameMessage,
-    setGameMessage,
-    isFullscreen,
-    setIsFullscreen,
-  };
-
-  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
+  return <>{children}</>;
 }

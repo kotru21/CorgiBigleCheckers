@@ -5,23 +5,19 @@ import {
   EMPTY,
   BOT_KING,
   PLAYER_KING,
-} from "../models/Constants";
+} from "@shared/config/constants";
 import { getValidMovesWithCapturePriority, executeMove } from "./MoveService";
-import {
-  boardUtils,
-  pieceUtils,
-  performanceUtils,
-} from "../utils/gameHelpers.js";
-import { logger } from "../utils/logger.js";
+import { boardUtils, pieceUtils } from "../utils/gameHelpers";
+import { logger } from "../utils/logger";
+import type { Board, Player as PlayerType } from "@shared/types/game.types";
 
-// Мемоизированная функция создания доски
-export const createInitialBoard = performanceUtils.memoize(() => {
+// Создание начальной доски
+export const createInitialBoard = (): Board => {
   try {
-    const board = Array(BOARD_SIZE)
-      .fill()
+    const board: Board = Array(BOARD_SIZE)
+      .fill(null)
       .map(() => Array(BOARD_SIZE).fill(EMPTY));
 
-    // Расстановка шашек бота (темные) - на рядах 0, 1, 2, 3 ТОЛЬКО на темных клетках
     for (let row = 0; row < 4; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
         if (boardUtils.isDarkSquare(row, col)) {
@@ -30,7 +26,6 @@ export const createInitialBoard = performanceUtils.memoize(() => {
       }
     }
 
-    // Расстановка шашек игрока (светлые) - на рядах 6, 7, 8, 9 ТОЛЬКО на темных клетках
     for (let row = 6; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
         if (boardUtils.isDarkSquare(row, col)) {
@@ -42,34 +37,41 @@ export const createInitialBoard = performanceUtils.memoize(() => {
     logger.info("Создана начальная доска по правилам международных шашек");
     return board;
   } catch (error) {
-    logger.error("Ошибка при создании начальной доски:", error.message);
-    throw error;
-  }
-});
-
-export const movePiece = (board, fromRow, fromCol, toRow, toCol) => {
-  try {
-    return executeMove(board, fromRow, fromCol, toRow, toCol);
-  } catch (error) {
-    logger.error("Ошибка при перемещении фигуры:", error.message);
+    logger.error(
+      "Ошибка при создании начальной доски:",
+      (error as Error).message
+    );
     throw error;
   }
 };
 
-// Мемоизированная проверка статуса игры
-export const checkGameStatus = performanceUtils.memoize((board) => {
+export const movePiece = (
+  board: Board,
+  fromRow: number,
+  fromCol: number,
+  toRow: number,
+  toCol: number
+): Board => {
+  try {
+    return executeMove(board, fromRow, fromCol, toRow, toCol);
+  } catch (error) {
+    logger.error("Ошибка при перемещении фигуры:", (error as Error).message);
+    throw error;
+  }
+};
+
+// Проверка статуса игры без мемоизации (чистая функция)
+export const checkGameStatus = (board: Board): PlayerType | null => {
   try {
     const { playerPieces, botPieces, playerKings, botKings } =
       boardUtils.countPieces(board);
 
-    if (botPieces + botKings === 0) return PLAYER;
-    if (playerPieces + playerKings === 0) return BOT;
+    if (botPieces + botKings === 0) return PLAYER as PlayerType;
+    if (playerPieces + playerKings === 0) return BOT as PlayerType;
 
-    // Проверяем, есть ли у игроков возможные ходы
     let botHasMoves = false;
     let playerHasMoves = false;
 
-    // Проверяем, есть ли ходы у бота
     for (let row = 0; row < BOARD_SIZE && !botHasMoves; row++) {
       for (let col = 0; col < BOARD_SIZE && !botHasMoves; col++) {
         const piece = board[row][col];
@@ -83,7 +85,6 @@ export const checkGameStatus = performanceUtils.memoize((board) => {
       }
     }
 
-    // Проверяем, есть ли ходы у игрока
     for (let row = 0; row < BOARD_SIZE && !playerHasMoves; row++) {
       for (let col = 0; col < BOARD_SIZE && !playerHasMoves; col++) {
         const piece = board[row][col];
@@ -100,12 +101,12 @@ export const checkGameStatus = performanceUtils.memoize((board) => {
       }
     }
 
-    if (!botHasMoves) return PLAYER;
-    if (!playerHasMoves) return BOT;
+    if (!botHasMoves) return PLAYER as PlayerType;
+    if (!playerHasMoves) return BOT as PlayerType;
 
     return null;
   } catch (error) {
-    logger.error("Ошибка при проверке статуса игры:", error.message);
+    logger.error("Ошибка при проверке статуса игры:", (error as Error).message);
     return null;
   }
-});
+};
