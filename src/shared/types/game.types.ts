@@ -5,7 +5,7 @@ export type PieceType =
   | "corgi-king"
   | null;
 
-export type Player = "player" | "bot";
+export type Player = "beagle" | "corgi";
 
 export interface Position {
   row: number;

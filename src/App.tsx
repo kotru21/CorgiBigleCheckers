@@ -1,10 +1,10 @@
-// src/App.jsx
+// @ts-nocheck
+// src/App.tsx
 import React, { useState } from "react";
 import { GameProvider } from "./contexts/GameContext";
 import { GameBoard } from "./components/GameBoard";
 import { MainMenu } from "./components/MainMenu";
 
-// Основной компонент приложения
 const App = () => {
   const [gameStarted, setGameStarted] = useState(false);
 

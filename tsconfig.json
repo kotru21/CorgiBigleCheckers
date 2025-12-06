@@ -9,20 +9,19 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
-      "@app/*": ["src/app/*"],
-      "@pages/*": ["src/pages/*"],
-      "@widgets/*": ["src/widgets/*"],
-      "@features/*": ["src/features/*"],
-      "@entities/*": ["src/entities/*"],
-      "@shared/*": ["src/shared/*"]
+      "@app/*": ["./src/app/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@widgets/*": ["./src/widgets/*"],
+      "@features/*": ["./src/features/*"],
+      "@entities/*": ["./src/entities/*"],
+      "@shared/*": ["./src/shared/*"]
     },
     "allowJs": true,
     "checkJs": false,
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "noEmit": true
   },
   "include": ["src", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]
