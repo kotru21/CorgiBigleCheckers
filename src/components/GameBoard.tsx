@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useRef } from "react";
 import { Board3D } from "./Board3D";
-import { useGame } from "../contexts/GameContext";
+import { useGame } from "../store/gameStore";
 import RulesModal from "./RulesModal";
 import {
   getValidMovesWithCapturePriority,

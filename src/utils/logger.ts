@@ -26,13 +26,13 @@ class Logger {
 
   info(message: string, ...args: unknown[]) {
     if (this.level >= LOG_LEVELS.INFO) {
-      console.info(`[INFO] ${message}`, ...args);
+      console.warn(`[INFO] ${message}`, ...args);
     }
   }
 
   debug(message: string, ...args: unknown[]) {
     if (this.level >= LOG_LEVELS.DEBUG) {
-      console.log(`[DEBUG] ${message}`, ...args);
+      console.warn(`[DEBUG] ${message}`, ...args);
     }
   }
 }

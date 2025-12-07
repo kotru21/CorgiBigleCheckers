@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { PerformanceMode, PerformanceMonitorProps } from "../types";
 
@@ -6,13 +6,17 @@ export function PerformanceMonitor({
   onPerformanceChange,
 }: PerformanceMonitorProps) {
   const frameCount = useRef(0);
-  const lastTime = useRef(Date.now());
+  const lastTime = useRef(0);
   const fps = useRef(60);
+
+  useEffect(() => {
+    lastTime.current = performance.now();
+  }, []);
 
   useFrame(() => {
     frameCount.current++;
 
-    const now = Date.now();
+    const now = performance.now();
     const elapsed = now - lastTime.current;
 
     if (elapsed > 500) {

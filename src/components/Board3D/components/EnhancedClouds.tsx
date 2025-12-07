@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
+import type { Group } from "three";
 import type { EnhancedCloudsProps } from "../types";
 
 const randomRange = (min: number, max: number) =>
@@ -21,7 +21,7 @@ function SimpleCloud({
   scale?: number;
   opacity?: number;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
 
   const spheres = useMemo(() => {
     const result: Array<{

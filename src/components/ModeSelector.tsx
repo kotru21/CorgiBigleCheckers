@@ -1,4 +1,4 @@
-import { useGame } from "../contexts/GameContext";
+import { useGame } from "../store/gameStore";
 import { GAME_MODES } from "@shared/config/constants";
 import { createInitialBoard } from "../services/BoardService";
 import { getModeName } from "../utils/modeHelpers";

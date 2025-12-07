@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useGame } from "../contexts/GameContext";
+import { useGame } from "../store/gameStore";
 import { getBestMove } from "../services/AIservice";
 import {
   executeMove,

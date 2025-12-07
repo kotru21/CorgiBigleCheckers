@@ -1,5 +1,5 @@
 import { createInitialBoard } from "../services/BoardService";
-import { useGame } from "../contexts/GameContext";
+import { useGame } from "../store/gameStore";
 
 export function GameControls() {
   const { setBoard, setGameOver, setPlayerTurn, setGameMessage } = useGame();

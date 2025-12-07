@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { usePieceAnimations } from "../../hooks/usePieceAnimations";
 import { useGLTF, Sparkles } from "@react-three/drei";
@@ -8,7 +8,6 @@ import type { GameMode } from "@shared/types/game.types";
 
 type PieceKind = "beagle" | "corgi";
 
-type ModelCache = Partial<Record<PieceKind | "crown", THREE.Group>>;
 type GLTFResult = { scene: THREE.Group };
 
 const beagleMaterial = new THREE.MeshStandardMaterial({
@@ -28,8 +27,6 @@ const crownMaterial = new THREE.MeshStandardMaterial({
   roughness: 0.2,
   metalness: 0.8,
 });
-
-const modelCache: ModelCache = {};
 
 interface PieceMeshProps {
   type: PieceKind;
@@ -55,9 +52,9 @@ export function PieceMesh({
   const { scene: pieceScene } = useGLTF(`/models/${type}.glb`) as GLTFResult;
   const { scene: crownScene } = useGLTF("/models/crown.glb") as GLTFResult;
 
-  if (!modelCache[type]) {
-    modelCache[type] = pieceScene.clone();
-    modelCache[type]?.traverse((child) => {
+  const pieceModel = useMemo(() => {
+    const clone = pieceScene.clone();
+    clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         mesh.castShadow = true;
@@ -65,11 +62,12 @@ export function PieceMesh({
         mesh.material = type === "beagle" ? beagleMaterial : corgiMaterial;
       }
     });
-  }
+    return clone;
+  }, [pieceScene, type]);
 
-  if (!modelCache.crown) {
-    modelCache.crown = crownScene.clone();
-    modelCache.crown?.traverse((child) => {
+  const crownModel = useMemo(() => {
+    const clone = crownScene.clone();
+    clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         mesh.castShadow = true;
@@ -77,10 +75,13 @@ export function PieceMesh({
         mesh.material = crownMaterial;
       }
     });
-  }
+    return clone;
+  }, [crownScene]);
 
   useFrame((state, delta) => {
-    if (!groupRef.current) {return;}
+    if (!groupRef.current) {
+      return;
+    }
 
     groupRef.current.position.y = currentHeight;
 
@@ -129,18 +130,16 @@ export function PieceMesh({
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {modelCache[type] && (
-        <primitive
-          object={modelCache[type]!.clone()}
-          position={[0, -0.1, 0]}
-          rotation={modelRotation}
-          scale={3}
-        />
-      )}
+      <primitive
+        object={pieceModel}
+        position={[0, -0.1, 0]}
+        rotation={modelRotation}
+        scale={3}
+      />
 
-      {isKing && modelCache.crown && (
+      {isKing && (
         <primitive
-          object={modelCache.crown.clone()}
+          object={crownModel}
           position={[0, 2, 0]}
           rotation={[-Math.PI / 2, 0, 0]}
           scale={0.03}

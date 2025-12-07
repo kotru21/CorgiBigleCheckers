@@ -19,9 +19,9 @@ import {
   PerformanceMonitor,
   SkyWithCloudsAndSun,
   SimpleEnvironment,
-  Renderer,
 } from "./components";
 import { useBoardSquares } from "./hooks";
+import * as THREE from "three";
 import type {
   Board3DProps,
   Board3DContentProps,
@@ -96,7 +96,6 @@ function Board3DContent({
         maxDistance={12}
         minDistance={5}
       />
-      <Renderer />
       <SimpleEnvironment gameMode={gameMode} />
       <PerformanceMonitor onPerformanceChange={handlePerformanceChange} />
       <Suspense fallback={null}>
@@ -142,7 +141,12 @@ export function Board3D({
       shadows
       dpr={[1, 1.5]}
       performance={{ min: 0.5 }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}>
+      gl={{ antialias: true, powerPreference: "high-performance" }}
+      onCreated={({ gl }) => {
+        gl.shadowMap.enabled = true;
+        gl.shadowMap.type = THREE.PCFSoftShadowMap;
+        gl.outputColorSpace = THREE.SRGBColorSpace;
+      }}>
       <Board3DContent
         board={board}
         onPieceSelect={onPieceSelect}

@@ -21,8 +21,9 @@ export const minimaxAlphaBeta = (
   const boardKey = JSON.stringify(board);
   const cacheKey = `${boardKey}-${depth}-${isMaximizing}`;
 
-  if (transpositionTable.has(cacheKey)) {
-    return transpositionTable.get(cacheKey)!;
+  const cachedResult = transpositionTable.get(cacheKey);
+  if (cachedResult !== undefined) {
+    return cachedResult;
   }
 
   try {

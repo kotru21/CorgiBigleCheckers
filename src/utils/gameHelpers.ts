@@ -18,8 +18,12 @@ export const pieceUtils = {
   isEmpty: (piece: PieceType) => piece === EMPTY,
 
   getPieceOwner: (piece: PieceType) => {
-    if (pieceUtils.isPlayerPiece(piece)) {return "player" as const;}
-    if (pieceUtils.isBotPiece(piece)) {return "bot" as const;}
+    if (pieceUtils.isPlayerPiece(piece)) {
+      return "player" as const;
+    }
+    if (pieceUtils.isBotPiece(piece)) {
+      return "bot" as const;
+    }
     return null;
   },
 };
@@ -53,10 +57,15 @@ export const boardUtils = {
     for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
         const piece = board[row][col];
-        if (piece === PLAYER) {playerPieces++;}
-        else if (piece === BOT) {botPieces++;}
-        else if (piece === PLAYER_KING) {playerKings++;}
-        else if (piece === BOT_KING) {botKings++;}
+        if (piece === PLAYER) {
+          playerPieces++;
+        } else if (piece === BOT) {
+          botPieces++;
+        } else if (piece === PLAYER_KING) {
+          playerKings++;
+        } else if (piece === BOT_KING) {
+          botKings++;
+        }
       }
     }
 
@@ -151,21 +160,21 @@ export const validationUtils = {
 
 // Утилиты для производительности
 export const performanceUtils = {
-  memoize: <T extends (...args: any[]) => any>(
-    fn: T,
-    keyGenerator: (...args: Parameters<T>) => string = (...args) =>
+  memoize: <Args extends unknown[], R>(
+    fn: (...args: Args) => R,
+    keyGenerator: (...args: Args) => string = (...args: Args) =>
       JSON.stringify(args)
   ) => {
-    const cache = new Map<string, ReturnType<T>>();
+    const cache = new Map<string, R>();
 
-    return (...args: Parameters<T>) => {
+    return (...args: Args) => {
       const key = keyGenerator(...args);
 
       if (cache.has(key)) {
-        return cache.get(key) as ReturnType<T>;
+        return cache.get(key) as R;
       }
 
-      const result = fn(...args);
+      const result = fn(...args) as R;
       cache.set(key, result);
 
       if (cache.size > 1000) {
@@ -179,21 +188,28 @@ export const performanceUtils = {
     };
   },
 
-  debounce: <T extends (...args: any[]) => void>(func: T, wait: number) => {
+  debounce: <T extends (...args: unknown[]) => void>(func: T, wait: number) => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
 
     return function executedFunction(...args: Parameters<T>) {
       const later = () => {
-        if (timeout) {clearTimeout(timeout);}
+        if (timeout) {
+          clearTimeout(timeout);
+        }
         func(...args);
       };
 
-      if (timeout) {clearTimeout(timeout);}
+      if (timeout) {
+        clearTimeout(timeout);
+      }
       timeout = setTimeout(later, wait);
     };
   },
 
-  throttle: <T extends (...args: any[]) => void>(func: T, limit: number) => {
+  throttle: <T extends (...args: unknown[]) => void>(
+    func: T,
+    limit: number
+  ) => {
     let inThrottle = false;
     return function throttled(this: unknown, ...args: Parameters<T>) {
       if (!inThrottle) {

@@ -1,12 +1,74 @@
-# React + Vite
+# Корги против Биглей — 3D шашки
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Визуально насыщенная игра в международные шашки (10×10) на React и Three.js. Вы играете за биглей против корги-бота: выбирайте один из режимов, перемещайте фигурки на стильной 3D-доске и сражайтесь с ИИ на базе минимакса с альфа-бета отсечением.
 
-Currently, two official plugins are available:
+## Основные возможности
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 3D-сцена на React Three Fiber: объёмная доска, мягкие тени, окружение, облака и динамическая камера.
+- Четыре режима игры: классика, «Безумные прыжки», «Вечеринка» с визуальными эффектами и «Турбо» с ускоренным ботом.
+- Подсветка допустимых ходов и обязательные взятия по правилам международных шашек, поддержка серийных захватов.
+- ИИ-базис: минимакс с альфа-бета отсечением, настраиваемая глубина поиска и задержка для реалистичности.
+- Индикатор производительности и авто-подстройка графики в зависимости от FPS.
+- Управление камерой через OrbitControls (зум, вращение), работа в полноэкранном режиме.
 
-## Expanding the ESLint configuration
+## Технологии
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React 19 + TypeScript
+- Vite 7
+- Three.js, React Three Fiber, @react-three/drei
+- Zustand для состояния
+- Tailwind CSS 4
+
+## Быстрый старт
+
+1. Установите Node.js 22+.
+2. Установите зависимости: `npm install`
+3. Запустите dev-сервер: `npm run dev`
+4. Откройте адрес из консоли (по умолчанию <http://localhost:5173>). Сервер стартует с `--host`, поэтому доступен и по локальной сети.
+
+## Скрипты
+
+- `npm run dev` — локальная разработка с HMR.
+- `npm run build` — прод-сборка Vite.
+- `npm run preview` — предпросмотр собранной версии.
+- `npm run lint` — проверка ESLint.
+- `npm run lint:fix` — ESLint с автоисправлением.
+- `npm run typecheck` — проверка типов (tsc --noEmit).
+- `npm run format` / `npm run format:check` — форматирование Prettier и проверка стиля.
+
+## Структура проекта
+
+```text
+src/
+ components/        # UI: доска, меню, модалки, 3D-окружение
+ components/Board3D # 3D-доска, фигуры, окружение, монитор FPS
+ contexts/          # Провайдер и хук useGame поверх zustand
+ services/          # Логика ходов, проверка статуса, AI (минимакс)
+ shared/            # Константы, типы
+ store/             # zustand-хранилище игрового состояния
+ utils/             # Вспомогательные функции, логгер, helpers
+public/models|textures# Статические ассеты для 3D
+```
+
+## Геймплей и правила
+
+- Вы играете за биглей, бот управляет корги. Движение только по тёмным клеткам.
+- Обязательные взятия соблюдаются; если есть несколько цепочек, выбирается максимум захватов.
+- При достижении противоположного края фигура становится «king» и ходит по диагонали на любое расстояние.
+- Режимы:
+  - Классический — стандартные правила международных шашек 10×10.
+  - Безумные прыжки — допускаются длинные прыжки через всю диагональ.
+  - Вечеринка — акцент на визуальные эффекты и повороты фигур.
+  - Турбо — ускоренный бот (меньшая задержка, повышенная глубина поиска).
+- Камера: вращение/зум через мышь; индикатор производительности справа вверху.
+
+## Настройки и кастомизация
+
+- `src/shared/config/constants.ts` — глубина и задержка ИИ, размеры доски, пороги FPS, значения фигур и режимы.
+- `src/components/Board3D` — освещение, окружение, облака, качество рендера; `EnhancedClouds` регулирует плотность облаков.
+- `public/` — модели и текстуры; можно заменить на свои без правок кода, сохранив пути.
+
+## Оптимизация
+
+- Монитор FPS переключает режимы производительности (`high/medium/low`) и передаёт данные в UI.
+- Canvas настроен на dpr [1, 1.5] и `powerPreference: "high-performance"`; тени и окружение можно упростить для слабых машин.
