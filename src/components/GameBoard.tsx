@@ -258,7 +258,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
   return (
     <div
       id="chess-board-container"
-      className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      className="fixed inset-0 w-screen h-screen overflow-hidden bg-linear-to-br from-gray-900 via-gray-800 to-gray-900">
       <div className="absolute top-2 left-2 z-10 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-md text-white font-medium">
         {gameMessage}
       </div>
@@ -316,12 +316,12 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
             <div className="flex gap-3">
               <button
                 onClick={handleNewGame}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg shadow-lg hover:from-purple-600 hover:to-blue-600 transition-colors">
+                className="flex-1 px-6 py-3 bg-linear-to-r from-purple-500 to-blue-500 text-white rounded-lg shadow-lg hover:from-purple-600 hover:to-blue-600 transition-colors">
                 Новая игра
               </button>
               <button
                 onClick={handleReturnToMenu}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white rounded-lg shadow-lg hover:from-gray-600 hover:to-gray-800 transition-colors">
+                className="flex-1 px-6 py-3 bg-linear-to-r from-gray-500 to-gray-700 text-white rounded-lg shadow-lg hover:from-gray-600 hover:to-gray-800 transition-colors">
                 В меню
               </button>
             </div>

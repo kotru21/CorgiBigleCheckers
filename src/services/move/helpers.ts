@@ -26,7 +26,9 @@ export const getPieceInfo = (piece: string | null) => {
 };
 
 export const getMoveDirections = (isPlayer: boolean, isKing: boolean) => {
-  if (isKing) {return DIRECTIONS.KING;}
+  if (isKing) {
+    return DIRECTIONS.KING;
+  }
   return isPlayer ? DIRECTIONS.PLAYER : DIRECTIONS.BOT;
 };
 
@@ -112,15 +114,13 @@ export const findKingCaptures = (
     const newRow = row + rowDir * distance;
     const newCol = col + colDir * distance;
 
-    if (
-      !boardUtils.isValidPosition(newRow, newCol) ||
-      !boardUtils.isDarkSquare(newRow, newCol)
-    ) {
-      if (!boardUtils.isDarkSquare(newRow, newCol)) {
-        distance++;
-        continue;
-      }
+    if (!boardUtils.isValidPosition(newRow, newCol)) {
       break;
+    }
+
+    if (!boardUtils.isDarkSquare(newRow, newCol)) {
+      distance++;
+      continue;
     }
 
     const cellPiece = board[newRow][newCol];
