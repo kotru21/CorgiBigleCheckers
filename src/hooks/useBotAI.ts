@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useGame } from "../store/gameStore";
 import { getBestMove } from "../services/AIservice";
 import {
@@ -24,10 +24,15 @@ export const useBotAI = () => {
     setValidMoves,
   } = useGame();
 
+  const isProcessingRef = useRef(false);
+
   useEffect(() => {
-    if (playerTurn || gameOver) {
+    if (playerTurn || gameOver || isProcessingRef.current) {
       return;
     }
+
+    let cancelled = false;
+    isProcessingRef.current = true;
 
     const makeAIMove = async () => {
       try {
@@ -43,7 +48,15 @@ export const useBotAI = () => {
 
         await new Promise((resolve) => setTimeout(resolve, delay));
 
+        if (cancelled || !board) {
+          return;
+        }
+
         const bestMove = getBestMove(board as Board, depth);
+
+        if (cancelled) {
+          return;
+        }
 
         if (bestMove) {
           let currentBoard = board as Board;
@@ -104,11 +117,13 @@ export const useBotAI = () => {
             }
           }
 
-          setBoard(currentBoard);
-          setPlayerTurn(true);
-          setSelectedPiece(null);
-          setValidMoves([]);
-          setGameMessage("Ваш ход! Выберите фигуру для хода.");
+          if (!cancelled) {
+            setBoard(currentBoard);
+            setPlayerTurn(true);
+            setSelectedPiece(null);
+            setValidMoves([]);
+            setGameMessage("Ваш ход! Выберите фигуру для хода.");
+          }
 
           const gameStatus = checkGameStatus(currentBoard);
           if (gameStatus) {
@@ -133,7 +148,14 @@ export const useBotAI = () => {
       }
     };
 
-    void makeAIMove();
+    void makeAIMove().finally(() => {
+      isProcessingRef.current = false;
+    });
+
+    return () => {
+      cancelled = true;
+      isProcessingRef.current = false;
+    };
   }, [
     board,
     playerTurn,
