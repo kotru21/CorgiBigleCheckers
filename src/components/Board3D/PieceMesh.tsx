@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
-import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import { usePieceAnimations } from "../../hooks/usePieceAnimations";
+import { type ThreeEvent } from "@react-three/fiber";
+import { usePieceAnimation } from "../../features/animation";
 import { useGLTF, Sparkles } from "@react-three/drei";
 import { GAME_MODES } from "@shared/config/constants";
 import * as THREE from "three";
@@ -30,24 +30,38 @@ const crownMaterial = new THREE.MeshStandardMaterial({
 
 interface PieceMeshProps {
   type: PieceKind;
-  position: [number, number, number];
+  boardRow: number;
+  boardCol: number;
   isKing: boolean;
   onClick: () => void;
   isSelected: boolean;
   gameMode: GameMode;
+  animationId?: string | null;
 }
 
 export function PieceMesh({
   type,
-  position,
+  boardRow,
+  boardCol,
   isKing,
   onClick,
   isSelected,
   gameMode,
+  animationId,
 }: PieceMeshProps) {
   const groupRef = useRef<THREE.Group | null>(null);
   const [hovered, setHovered] = useState(false);
-  const { currentHeight } = usePieceAnimations(isSelected);
+
+  // Используем комплексную систему анимаций
+  const { isMoving } = usePieceAnimation({
+    boardRow,
+    boardCol,
+    isSelected,
+    isHovered: hovered,
+    animationId,
+    groupRef,
+    pieceType: type,
+  });
 
   const { scene: pieceScene } = useGLTF(`/models/${type}.glb`) as GLTFResult;
   const { scene: crownScene } = useGLTF("/models/crown.glb") as GLTFResult;
@@ -78,27 +92,17 @@ export function PieceMesh({
     return clone;
   }, [crownScene]);
 
-  useFrame((state, delta) => {
-    if (!groupRef.current) {
-      return;
-    }
-
-    groupRef.current.position.y = currentHeight;
-
-    if ((hovered || isSelected) && type === "beagle") {
-      groupRef.current.rotation.y += delta * (isSelected ? 1.0 : 0.5);
-    }
-
-    if (gameMode === GAME_MODES.PARTY_MODE && (isSelected || hovered)) {
-      groupRef.current.rotation.z =
-        Math.sin(state.clock.elapsedTime * 2) * 0.05;
-    }
-  });
+  // Все анимации теперь управляются в usePieceAnimation
 
   const scale = type === "corgi" ? 0.4 : 0.43;
 
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
+
+    // Не позволяем кликать во время анимации
+    if (isMoving) {
+      return;
+    }
 
     if (type === "beagle") {
       onClick();
@@ -110,14 +114,13 @@ export function PieceMesh({
 
   return (
     <group
-      position={[position[0], position[1], position[2]]}
       ref={groupRef}
       scale={hovered && type === "beagle" ? scale * 1.1 : scale}>
       <mesh
         onClick={handleClick}
         onPointerOver={(event) => {
           event.stopPropagation();
-          if (type === "beagle") {
+          if (type === "beagle" && !isMoving) {
             setHovered(true);
           }
         }}

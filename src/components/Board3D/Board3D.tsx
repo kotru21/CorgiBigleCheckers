@@ -36,6 +36,7 @@ function Board3DContent({
   onPerformanceData,
   piecesWithCaptures = [],
   gameMode,
+  currentAnimation,
 }: Board3DContentProps) {
   const [performanceMode, setPerformanceMode] =
     useState<PerformanceMode>("high");
@@ -67,23 +68,31 @@ function Board3DContent({
           const type = cell.includes("beagle") ? "beagle" : "corgi";
           const isKing = cell.includes("-king");
 
+          // Определяем, анимируется ли эта фигура
+          const isAnimating =
+            currentAnimation &&
+            currentAnimation.fromRow === rowIndex &&
+            currentAnimation.fromCol === colIndex;
+
           return [
             <PieceMesh
               key={`piece-${rowIndex}-${colIndex}`}
               type={type}
               isKing={isKing}
-              position={[rowIndex - 4.5, 0, colIndex - 4.5]}
+              boardRow={rowIndex}
+              boardCol={colIndex}
               onClick={() => onPieceSelect(rowIndex, colIndex)}
               isSelected={
                 selectedPiece?.row === rowIndex &&
                 selectedPiece?.col === colIndex
               }
               gameMode={gameMode}
+              animationId={isAnimating ? currentAnimation.animationId : null}
             />,
           ];
         })
       ),
-    [board, selectedPiece, onPieceSelect, gameMode]
+    [board, selectedPiece, onPieceSelect, gameMode, currentAnimation]
   );
 
   return (
@@ -133,6 +142,7 @@ export function Board3D({
   onPerformanceData,
   piecesWithCaptures = [],
   gameMode,
+  currentAnimation,
 }: Board3DProps) {
   const performanceHandler = onPerformanceData ?? (() => {});
 
@@ -155,9 +165,15 @@ export function Board3D({
         onPerformanceData={performanceHandler}
         piecesWithCaptures={piecesWithCaptures}
         gameMode={gameMode}
+        currentAnimation={currentAnimation}
       />
     </Canvas>
   );
 }
 
-export type { Board3DProps, PerformanceMode, CaptureInfo } from "./types";
+export type {
+  Board3DProps,
+  PerformanceMode,
+  CaptureInfo,
+  PieceAnimationInfo,
+} from "./types";

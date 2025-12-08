@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import { Board3D } from "./Board3D";
+import { Board3D, type PieceAnimationInfo } from "./Board3D";
 import { useGame } from "../store/gameStore";
+import { useAnimationStore } from "../store/animationStore";
 import RulesModal from "./RulesModal";
 import {
   getValidMovesWithCapturePriority,
@@ -38,16 +39,22 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
     gameMode,
   } = useGame();
 
-  useBotAI();
-
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>(
     PERFORMANCE_MODES.HIGH
   );
   const [showFpsInfo, setShowFpsInfo] = useState(false);
   const [currentFps, setCurrentFps] = useState(60);
   const [showRules, setShowRules] = useState(false);
+  const [currentAnimation, setCurrentAnimation] =
+    useState<PieceAnimationInfo | null>(null);
 
   const boardCreationRef = useRef(false);
+
+  // Подключаем store анимаций
+  const { startAnimation, isAnimating } = useAnimationStore();
+
+  // Bot AI - передаём setCurrentAnimation для плавных анимаций бота
+  useBotAI({ setCurrentAnimation });
 
   const piecesWithCaptures = useMemo(() => {
     try {
@@ -133,7 +140,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
 
   const handlePieceSelect = useCallback(
     (row: number, col: number) => {
-      if (gameOver || !playerTurn) {
+      if (gameOver || !playerTurn || isAnimating) {
         return;
       }
 
@@ -147,39 +154,56 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
           );
 
           if (selectedMove) {
-            const newBoard = executeMove(
-              board,
-              selectedPiece.row,
-              selectedPiece.col,
-              row,
-              col
-            );
-            setBoard(newBoard);
-
             const wasCapture = selectedMove.capturedRow !== undefined;
+            const fromRow = selectedPiece.row;
+            const fromCol = selectedPiece.col;
 
-            if (wasCapture) {
-              const { moves: continuedCaptures, mustCapture } =
-                getValidMovesWithCapturePriority(newBoard, row, col);
+            // Запускаем анимацию перед обновлением доски
+            const animationId = startAnimation(
+              fromRow,
+              fromCol,
+              row,
+              col,
+              wasCapture,
+              () => {
+                // Колбэк вызывается после завершения анимации
+                const newBoard = executeMove(board, fromRow, fromCol, row, col);
+                setBoard(newBoard);
+                setCurrentAnimation(null);
 
-              if (mustCapture && continuedCaptures.length > 0) {
-                setSelectedPiece({ row, col });
-                setValidMoves([...continuedCaptures]);
-                setGameMessage(
-                  "Продолжайте взятие! Серия должна быть завершена."
-                );
-                return;
+                if (wasCapture) {
+                  const { moves: continuedCaptures, mustCapture } =
+                    getValidMovesWithCapturePriority(newBoard, row, col);
+
+                  if (mustCapture && continuedCaptures.length > 0) {
+                    setSelectedPiece({ row, col });
+                    setValidMoves([...continuedCaptures]);
+                    setGameMessage(
+                      "Продолжайте взятие! Серия должна быть завершена."
+                    );
+                    return;
+                  }
+                }
+
+                resetSelection();
+                setPlayerTurn(false);
+                setGameMessage("Ход корги...");
+
+                const gameStatus = checkGameStatus(newBoard);
+                if (gameStatus) {
+                  handleGameOver(gameStatus);
+                }
               }
-            }
+            );
 
-            resetSelection();
-            setPlayerTurn(false);
-            setGameMessage("Ход корги...");
-
-            const gameStatus = checkGameStatus(newBoard);
-            if (gameStatus) {
-              handleGameOver(gameStatus);
-            }
+            // Устанавливаем текущую анимацию для передачи в Board3D
+            setCurrentAnimation({
+              fromRow,
+              fromCol,
+              toRow: row,
+              toCol: col,
+              animationId,
+            });
           } else if (isPlayerPiece) {
             selectPiece(row, col);
           } else {
@@ -199,6 +223,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
     [
       gameOver,
       playerTurn,
+      isAnimating,
       board,
       selectedPiece,
       validMoves,
@@ -210,6 +235,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
       selectPiece,
       setSelectedPiece,
       setValidMoves,
+      startAnimation,
     ]
   );
 
@@ -304,6 +330,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
           onPerformanceData={handlePerformanceData}
           piecesWithCaptures={piecesWithCaptures}
           gameMode={gameMode as GameMode}
+          currentAnimation={currentAnimation}
         />
       </div>
 

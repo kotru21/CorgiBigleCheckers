@@ -21,6 +21,14 @@ export interface SkyWithCloudsAndSunProps {
   gameMode: GameMode;
 }
 
+export interface PieceAnimationInfo {
+  fromRow: number;
+  fromCol: number;
+  toRow: number;
+  toCol: number;
+  animationId: string;
+}
+
 export interface Board3DContentProps {
   board: Board;
   onPieceSelect: (row: number, col: number) => void;
@@ -29,6 +37,7 @@ export interface Board3DContentProps {
   onPerformanceData: (fps: number, mode: PerformanceMode) => void;
   piecesWithCaptures?: CaptureInfo[];
   gameMode: GameMode;
+  currentAnimation?: PieceAnimationInfo | null | undefined;
 }
 
 export interface Board3DProps {
@@ -39,6 +48,7 @@ export interface Board3DProps {
   onPerformanceData?: (fps: number, mode: PerformanceMode) => void;
   piecesWithCaptures?: CaptureInfo[];
   gameMode: GameMode;
+  currentAnimation?: PieceAnimationInfo | null | undefined;
 }
 
 export interface PerformanceMonitorProps {
