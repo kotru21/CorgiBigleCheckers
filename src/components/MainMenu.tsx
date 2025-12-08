@@ -26,9 +26,9 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
   };
 
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+    <div className="fixed inset-0 w-screen h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
       <div className="max-w-md w-full p-6 bg-white/10 backdrop-blur-md rounded-xl shadow-2xl text-white">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+        <h1 className="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-purple-600">
           Корги против Биглей
         </h1>
 
@@ -39,7 +39,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
         <div className="grid gap-4">
           <button
             onClick={() => handleSelectMode(GAME_MODES.CLASSIC)}
-            className="p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            className="p-4 bg-linear-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
             <span className="block text-xl font-bold">Классический</span>
             <span className="text-sm opacity-80">
               Стандартные правила шашек
@@ -48,7 +48,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
 
           <button
             onClick={() => handleSelectMode(GAME_MODES.CRAZY_JUMPS)}
-            className="p-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            className="p-4 bg-linear-to-r from-purple-500 to-pink-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
             <span className="block text-xl font-bold">Безумные прыжки</span>
             <span className="text-sm opacity-80">
               Возможны прыжки через всю доску
@@ -57,7 +57,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
 
           <button
             onClick={() => handleSelectMode(GAME_MODES.PARTY_MODE)}
-            className="p-4 bg-gradient-to-r from-pink-500 to-orange-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            className="p-4 bg-linear-to-r from-pink-500 to-orange-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
             <span className="block text-xl font-bold">Режим вечеринки</span>
             <span className="text-sm opacity-80">
               Случайные эффекты и повороты фигур
@@ -66,7 +66,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
 
           <button
             onClick={() => handleSelectMode(GAME_MODES.TURBO)}
-            className="p-4 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            className="p-4 bg-linear-to-r from-green-500 to-teal-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
             <span className="block text-xl font-bold">Турбо режим</span>
             <span className="text-sm opacity-80">
               Ускоренный темп игры с быстрым ботом

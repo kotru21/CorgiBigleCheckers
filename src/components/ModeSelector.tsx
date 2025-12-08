@@ -25,14 +25,14 @@ export function ModeSelector({ onClose }: ModeSelectorProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl max-w-md w-full">
-        <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+        <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-purple-600">
           Выберите режим игры
         </h2>
 
         <div className="grid gap-4">
           <button
             onClick={() => handleSelectMode(GAME_MODES.CLASSIC)}
-            className="p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            className="p-4 bg-linear-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
             <span className="block text-xl font-bold">Классический</span>
             <span className="text-sm opacity-80">
               Стандартные правила шашек
@@ -41,7 +41,7 @@ export function ModeSelector({ onClose }: ModeSelectorProps) {
 
           <button
             onClick={() => handleSelectMode(GAME_MODES.CRAZY_JUMPS)}
-            className="p-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            className="p-4 bg-linear-to-r from-purple-500 to-pink-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
             <span className="block text-xl font-bold">Безумные прыжки</span>
             <span className="text-sm opacity-80">
               Возможны прыжки через всю доску
@@ -50,7 +50,7 @@ export function ModeSelector({ onClose }: ModeSelectorProps) {
 
           <button
             onClick={() => handleSelectMode(GAME_MODES.PARTY_MODE)}
-            className="p-4 bg-gradient-to-r from-pink-500 to-orange-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            className="p-4 bg-linear-to-r from-pink-500 to-orange-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
             <span className="block text-xl font-bold">Режим вечеринки</span>
             <span className="text-sm opacity-80">
               Случайные эффекты и повороты фигур
@@ -59,7 +59,7 @@ export function ModeSelector({ onClose }: ModeSelectorProps) {
 
           <button
             onClick={() => handleSelectMode(GAME_MODES.TURBO)}
-            className="p-4 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
+            className="p-4 bg-linear-to-r from-green-500 to-teal-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
             <span className="block text-xl font-bold">Турбо режим</span>
             <span className="text-sm opacity-80">
               Ускоренный темп игры с быстрым ботом
