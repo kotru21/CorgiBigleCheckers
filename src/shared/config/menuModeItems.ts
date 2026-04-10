@@ -30,4 +30,4 @@ export const MENU_MODE_ITEMS: ReadonlyArray<{
 
 /** Кнопка режима в главном меню и в модалке смены режима. */
 export const MENU_MODE_CARD_CLASS =
-  "flex min-h-[3.75rem] w-full flex-col justify-center gap-0.5 rounded-xl border border-zinc-700/80 bg-zinc-900/90 px-2.5 py-1.5 text-left transition-[border-color,background-color,box-shadow] duration-200 cursor-pointer hover:border-cyan-500/45 hover:bg-zinc-800/95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/80 active:bg-zinc-800 sm:min-h-16 sm:px-3 sm:py-2";
+  "flex min-h-[3.75rem] w-full flex-col justify-center gap-0.5 rounded-xl border border-zinc-700/80 bg-zinc-900/90 px-2.5 py-1.5 text-left transition-[border-color,background-color,box-shadow] duration-200 cursor-pointer hover:border-orange-500/50 hover:bg-zinc-800/95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400/80 active:bg-zinc-800 sm:min-h-16 sm:px-3 sm:py-2";

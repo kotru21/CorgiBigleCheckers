@@ -5,9 +5,9 @@
   --color-bg-elevated: #18181b;
   --color-surface: rgba(24, 24, 27, 0.94);
   --color-border: rgba(63, 63, 70, 0.85);
-  --color-accent: #22d3ee;
-  --color-accent-dim: rgba(34, 211, 238, 0.14);
-  --color-accent-hover: #06b6d4;
+  --color-accent: #fb923c;
+  --color-accent-dim: rgba(251, 146, 60, 0.16);
+  --color-accent-hover: #f97316;
   --color-text: #fafafa;
   --color-text-muted: #a1a1aa;
   --font-display: "Fredoka", system-ui, sans-serif;
@@ -25,9 +25,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --gradient-from: rgb(34 211 238);
+  --gradient-from: rgb(251 146 60);
   --gradient-via: rgb(113 113 122);
-  --gradient-to: rgb(34 211 238);
+  --gradient-to: rgb(249 115 22);
 }
 
 *,
@@ -68,6 +68,10 @@ body {
   min-height: 100%;
   min-height: 100dvh;
   width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: inherit;
 }
 
 h1,
@@ -227,9 +231,9 @@ button {
 .gradient-bg {
   background: linear-gradient(
     90deg,
-    rgba(34, 211, 238, 0.08),
+    rgba(251, 146, 60, 0.1),
     rgba(113, 113, 122, 0.12),
-    rgba(34, 211, 238, 0.08)
+    rgba(249, 115, 22, 0.1)
   );
   background-size: 200% 100%;
   animation: gradientMove 15s linear infinite;
@@ -299,9 +303,9 @@ button {
     --color-bg-elevated: #ffffff;
     --color-surface: rgba(255, 255, 255, 0.96);
     --color-border: rgba(212, 212, 216, 0.95);
-    --color-accent: #0891b2;
-    --color-accent-dim: rgba(8, 145, 178, 0.12);
-    --color-accent-hover: #0e7490;
+    --color-accent: #ea580c;
+    --color-accent-dim: rgba(234, 88, 12, 0.12);
+    --color-accent-hover: #c2410c;
     --color-text: #18181b;
     --color-text-muted: #52525b;
   }
@@ -320,7 +324,7 @@ button {
   }
 
   .bg-blue-100 {
-    background-color: #e0f2fe;
+    background-color: #ffedd5;
     color: #18181b;
   }
 }
@@ -332,7 +336,7 @@ button {
   }
 
   .bg-blue-100 {
-    background-color: #164e63;
+    background-color: #7c2d12;
     color: rgba(255, 255, 255, 0.9);
   }
 }

@@ -16,7 +16,7 @@ export function GameOverSheet({
       aria-modal="true"
       aria-labelledby="game-over-title">
       <div className="w-full max-w-sm animate-[appear_0.35s_ease-out] rounded-t-2xl border border-zinc-700/90 bg-(--color-surface) p-4 shadow-2xl backdrop-blur-xl sm:max-w-md sm:rounded-2xl sm:p-6">
-        <div className="mb-4 h-0.5 w-12 rounded-full bg-cyan-400/80 sm:mx-auto" />
+        <div className="mb-4 h-0.5 w-12 rounded-full bg-orange-400/85 sm:mx-auto" />
         <h2
           id="game-over-title"
           className="font-display mb-4 text-center text-lg font-bold leading-snug text-zinc-100 sm:text-xl">
@@ -26,7 +26,7 @@ export function GameOverSheet({
           <button
             type="button"
             onClick={onNewGame}
-            className="min-h-11 flex-1 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-bold text-zinc-950 shadow-lg transition-[filter] duration-200 cursor-pointer hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+            className="min-h-11 flex-1 rounded-xl bg-orange-600 px-4 py-2.5 text-sm font-bold text-zinc-950 shadow-lg transition-[filter] duration-200 cursor-pointer hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-300">
             Новая игра
           </button>
           <button

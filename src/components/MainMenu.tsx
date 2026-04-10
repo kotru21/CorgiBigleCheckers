@@ -20,11 +20,21 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
   };
 
   return (
-    <div className="fixed inset-0 flex h-dvh max-h-dvh flex-col overflow-hidden bg-zinc-950 bg-linear-to-b from-zinc-950 via-zinc-900 to-black">
-      <div className="safe-pt safe-pb safe-px flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain px-2 pb-2 pt-1 sm:px-4 sm:pb-3 sm:pt-2">
-        <div className="mx-auto my-auto w-full max-w-md shrink-0 flex flex-col rounded-2xl border border-zinc-800/90 bg-(--color-surface) shadow-xl backdrop-blur-md sm:max-w-lg sm:rounded-3xl">
+    <div className="fixed inset-0 flex h-dvh max-h-dvh flex-col overflow-hidden bg-zinc-950">
+      {/* Иллюстрация: cover на всех экранах; в портрете смещаем фокус к центру сцены (собаки + стол). */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-cover bg-no-repeat bg-center portrait:max-sm:bg-position-[46%_38%] sm:portrait:bg-position-[48%_40%] md:bg-center"
+        style={{ backgroundImage: "url(/bg.png)" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/75 via-black/50 to-black/80 sm:from-black/60 sm:via-black/40 sm:to-black/70"
+      />
+      <div className="safe-pt safe-pb safe-px relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain px-2 pb-2 pt-1 sm:px-4 sm:pb-3 sm:pt-2">
+        <div className="mx-auto my-auto w-full max-w-md shrink-0 flex flex-col rounded-2xl border border-zinc-800/90 bg-(--color-surface) shadow-xl shadow-black/40 backdrop-blur-md sm:max-w-lg sm:rounded-3xl">
           <header className="shrink-0 border-b border-zinc-800/80 px-3 py-2 sm:px-4 sm:py-2.5">
-            <p className="font-display text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-400/90 sm:text-xs">
+            <p className="font-display text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-400/90 sm:text-xs">
               Шашки 10×10
             </p>
             <h1 className="font-display text-lg font-bold leading-tight text-zinc-100 sm:text-2xl">
@@ -53,7 +63,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
             <button
               type="button"
               onClick={() => setShowRules(true)}
-              className="mt-2 flex min-h-9 w-full items-center justify-center rounded-xl border border-dashed border-zinc-600/90 bg-zinc-900/50 px-3 py-1.5 text-sm font-semibold text-zinc-300 transition-colors duration-200 cursor-pointer hover:border-cyan-500/40 hover:bg-cyan-950/30 hover:text-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/70 sm:mt-2.5">
+              className="mt-2 flex min-h-9 w-full items-center justify-center rounded-xl border border-dashed border-zinc-600/90 bg-zinc-900/50 px-3 py-1.5 text-sm font-semibold text-zinc-300 transition-colors duration-200 cursor-pointer hover:border-orange-500/45 hover:bg-orange-950/35 hover:text-orange-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400/75 sm:mt-2.5">
               Правила игры
             </button>
           </div>

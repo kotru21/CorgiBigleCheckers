@@ -8,7 +8,7 @@ export function GameInstructions() {
       <button
         className="flex justify-between items-center w-full"
         onClick={() => setExpanded((prev) => !prev)}>
-        <h2 className="text-2xl font-bold text-left bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+        <h2 className="text-2xl font-bold text-left bg-clip-text text-transparent bg-linear-to-r from-orange-500 to-amber-600">
           Как играть в Международные Шашки
         </h2>
 

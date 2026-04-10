@@ -2,7 +2,7 @@ import type { Position } from "@shared/types/game.types";
 import type { PerformanceMode } from "./Board3D/types";
 
 const HUD_BTN_CLASS =
-  "inline-flex h-8 min-h-8 shrink-0 items-center justify-center gap-1 rounded-full bg-black/45 px-2.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-zinc-100 shadow-sm backdrop-blur-md transition-[background-color,color] duration-200 cursor-pointer hover:bg-black/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/80 sm:px-3";
+  "inline-flex h-8 min-h-8 shrink-0 items-center justify-center gap-1 rounded-full bg-black/45 px-2.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-zinc-100 shadow-sm backdrop-blur-md transition-[background-color,color] duration-200 cursor-pointer hover:bg-black/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400/80 sm:px-3";
 
 function perfDotClassForMode(mode: PerformanceMode): string {
   if (mode === "high") {
@@ -56,7 +56,7 @@ export function GameBoardHud({
         <div className="pointer-events-auto ml-auto flex h-8 min-h-8 shrink-0 items-center justify-center gap-1.5">
           <button
             type="button"
-            className={`${HUD_BTN_CLASS} ${showFpsInfo ? "text-cyan-200" : ""}`}
+            className={`${HUD_BTN_CLASS} ${showFpsInfo ? "text-orange-200" : ""}`}
             onClick={onToggleFps}
             aria-pressed={showFpsInfo}
             title="Производительность / FPS">
@@ -85,7 +85,7 @@ export function GameBoardHud({
           <button
             type="button"
             onClick={onReturnToMenu}
-            className={`${HUD_BTN_CLASS} text-cyan-200`}
+            className={`${HUD_BTN_CLASS} text-orange-200`}
             title="В главное меню">
             Меню
           </button>
