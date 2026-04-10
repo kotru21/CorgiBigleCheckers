@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useGame } from "../store/gameStore";
-import { useAnimationStore } from "../store/animationStore";
+import { useAnimationStore } from "../features/animation";
 import { getBestMove } from "../services/AIservice";
 import {
   executeMove,

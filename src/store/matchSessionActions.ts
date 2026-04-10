@@ -1,5 +1,5 @@
 import type { GameMode } from "@shared/types/game.types";
-import { useAnimationStore } from "./animationStore";
+import { useAnimationStore } from "../features/animation";
 import { useGameStore } from "./gameStore";
 
 /** Сброс анимаций фигур + новая партия в текущем режиме (HUD, GameControls). */

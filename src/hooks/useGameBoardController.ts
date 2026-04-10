@@ -11,7 +11,7 @@ import type { Board, GameMode, Move, Player, Position } from "@shared/types/game
 import { PLAYER, PERFORMANCE_MODES } from "@shared/config/constants";
 import { useGame } from "../store/gameStore";
 import { restartMatchFromUI } from "../store/matchSessionActions";
-import { useAnimationStore } from "../store/animationStore";
+import { useAnimationStore } from "../features/animation";
 import {
   getValidMovesWithCapturePriority,
   executeMove,
