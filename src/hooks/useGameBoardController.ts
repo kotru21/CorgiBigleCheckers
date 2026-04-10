@@ -19,8 +19,10 @@ import { checkGameStatus } from "../services/BoardService";
 import { useBotAI } from "./useBotAI";
 import { pieceUtils } from "../utils/gameHelpers";
 import { logger } from "../utils/logger";
-import type { CaptureInfo } from "../components/Board3D/types";
 import { useTransientActionLock } from "./useTransientActionLock";
+
+/** Совместимо с `CaptureInfo` из Board3D (подсветка обязательных взятий). */
+type PieceCaptureHighlight = { row: number; col: number; captures: Move[] };
 
 type PerformanceMode =
   (typeof PERFORMANCE_MODES)[keyof typeof PERFORMANCE_MODES];
@@ -37,7 +39,7 @@ export interface UseGameBoardControllerResult {
   gameMessage: string;
   selectedPiece: Position | null;
   validMoves: Move[];
-  piecesWithCaptures: CaptureInfo[];
+  piecesWithCaptures: PieceCaptureHighlight[];
   currentAnimation: PieceAnimationInfo | null;
   handlePerformanceData: (fps: number, mode: PerformanceMode) => void;
   handlePieceSelect: (row: number, col: number) => void;
@@ -88,7 +90,7 @@ export function useGameBoardController({
   const piecesWithCaptures = useMemo(() => {
     try {
       if (!playerTurn || !board) {
-        return [] as CaptureInfo[];
+        return [] as PieceCaptureHighlight[];
       }
       return getPiecesWithCaptures(board, true, gameMode);
     } catch (error) {
@@ -96,7 +98,7 @@ export function useGameBoardController({
         "Ошибка при получении фигур с захватами:",
         (error as Error).message
       );
-      return [] as CaptureInfo[];
+      return [] as PieceCaptureHighlight[];
     }
   }, [board, playerTurn, gameMode]);
 
