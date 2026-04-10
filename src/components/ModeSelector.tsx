@@ -3,8 +3,6 @@ import {
   MENU_MODE_CARD_CLASS,
   MENU_MODE_ITEMS,
 } from "@shared/config/menuModeItems";
-import { createInitialBoard } from "../services/BoardService";
-import { getModeStartMessage } from "../utils/modeHelpers";
 import type { GameMode } from "@shared/types/game.types";
 
 interface ModeSelectorProps {
@@ -12,16 +10,10 @@ interface ModeSelectorProps {
 }
 
 export function ModeSelector({ onClose }: ModeSelectorProps) {
-  const { setGameMode, setBoard, setPlayerTurn, setGameOver, setGameMessage } =
-    useGame();
+  const beginMatch = useGame((s) => s.beginMatch);
 
   const handleSelectMode = (mode: GameMode) => {
-    setGameMode(mode);
-    const newBoard = createInitialBoard();
-    setBoard(newBoard);
-    setPlayerTurn(true);
-    setGameOver(false);
-    setGameMessage(getModeStartMessage(mode));
+    beginMatch(mode);
     onClose();
   };
 

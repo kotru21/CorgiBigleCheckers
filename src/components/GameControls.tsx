@@ -1,15 +1,10 @@
-import { createInitialBoard } from "../services/BoardService";
 import { useGame } from "../store/gameStore";
 
 export function GameControls() {
-  const { setBoard, setGameOver, setPlayerTurn, setGameMessage } = useGame();
+  const restartMatch = useGame((s) => s.restartMatch);
 
   const handleRestart = () => {
-    const newBoard = createInitialBoard();
-    setBoard(newBoard);
-    setGameOver(false);
-    setPlayerTurn(true);
-    setGameMessage("Новая партия · ваш ход");
+    restartMatch();
   };
 
   return (

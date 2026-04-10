@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { createInitialBoard } from "../services/BoardService";
 import { GAME_MODES } from "@shared/config/constants";
+import {
+  createMatchSliceForMode,
+  createRestartSliceKeepingMode,
+} from "../game/matchLifecycle";
 import type {
   Board,
   GameMode,
@@ -28,6 +32,8 @@ export interface GameStore {
   setIsFullscreen: (isFullscreen: boolean) => void;
 
   resetGame: (message?: string) => void;
+  beginMatch: (mode: GameMode) => void;
+  restartMatch: () => void;
   switchTurn: () => void;
 }
 
@@ -53,13 +59,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setIsFullscreen: (isFullscreen) => set({ isFullscreen }),
 
   resetGame: (message = "Новая партия · ваш ход") =>
-    set(() => ({
-      board: createInitialBoard() as Board,
-      gameOver: false,
-      playerTurn: true,
-      selectedPiece: null,
-      validMoves: [],
+    set((state) => ({
+      ...state,
+      ...createRestartSliceKeepingMode(state.gameMode),
       gameMessage: message,
+    })),
+
+  beginMatch: (mode) => set(() => createMatchSliceForMode(mode)),
+
+  restartMatch: () =>
+    set((state) => ({
+      ...state,
+      ...createRestartSliceKeepingMode(state.gameMode),
     })),
 
   switchTurn: () => set({ playerTurn: !get().playerTurn }),
