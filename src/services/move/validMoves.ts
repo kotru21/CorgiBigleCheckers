@@ -5,7 +5,12 @@ import { getMoveDirections, getPieceInfo } from "./helpers";
 import { getAllPossibleCaptures } from "./captures";
 
 // Получить валидные ходы для конкретной фигуры
-export const getValidMoves = (board: Board, row: number, col: number) => {
+export const getValidMoves = (
+  board: Board,
+  row: number,
+  col: number,
+  longMenCaptures = false
+) => {
   const piece = board[row][col];
   const moves: Move[] = [];
 
@@ -14,7 +19,13 @@ export const getValidMoves = (board: Board, row: number, col: number) => {
   }
 
   const { isPlayer, isKing } = getPieceInfo(piece);
-  const allCaptures = getAllPossibleCaptures(board, row, col, new Set());
+  const allCaptures = getAllPossibleCaptures(
+    board,
+    row,
+    col,
+    new Set(),
+    longMenCaptures
+  );
 
   if (allCaptures.length > 0) {
     const maxCaptured = Math.max(

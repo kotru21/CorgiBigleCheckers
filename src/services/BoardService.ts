@@ -2,7 +2,11 @@ import { BOARD_SIZE, BOT, PLAYER, EMPTY } from "@shared/config/constants";
 import { getValidMovesWithCapturePriority, executeMove } from "./MoveService";
 import { boardUtils, pieceUtils } from "../utils/gameHelpers";
 import { logger } from "../utils/logger";
-import type { Board, Player as PlayerType } from "@shared/types/game.types";
+import type {
+  Board,
+  GameMode,
+  Player as PlayerType,
+} from "@shared/types/game.types";
 
 // Создание начальной доски
 export const createInitialBoard = (): Board => {
@@ -54,7 +58,10 @@ export const movePiece = (
 };
 
 // Проверка статуса игры без мемоизации (чистая функция)
-export const checkGameStatus = (board: Board): PlayerType | null => {
+export const checkGameStatus = (
+  board: Board,
+  gameMode?: GameMode
+): PlayerType | null => {
   try {
     const { playerPieces, botPieces, playerKings, botKings } =
       boardUtils.countPieces(board);
@@ -73,7 +80,12 @@ export const checkGameStatus = (board: Board): PlayerType | null => {
       for (let col = 0; col < BOARD_SIZE && !botHasMoves; col++) {
         const piece = board[row][col];
         if (pieceUtils.isBotPiece(piece) && boardUtils.isDarkSquare(row, col)) {
-          const { moves } = getValidMovesWithCapturePriority(board, row, col);
+          const { moves } = getValidMovesWithCapturePriority(
+            board,
+            row,
+            col,
+            gameMode
+          );
           if (moves.length > 0) {
             botHasMoves = true;
             break;
@@ -89,7 +101,12 @@ export const checkGameStatus = (board: Board): PlayerType | null => {
           pieceUtils.isPlayerPiece(piece) &&
           boardUtils.isDarkSquare(row, col)
         ) {
-          const { moves } = getValidMovesWithCapturePriority(board, row, col);
+          const { moves } = getValidMovesWithCapturePriority(
+            board,
+            row,
+            col,
+            gameMode
+          );
           if (moves.length > 0) {
             playerHasMoves = true;
             break;

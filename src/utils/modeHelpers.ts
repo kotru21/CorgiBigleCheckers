@@ -1,6 +1,9 @@
 import { GAME_MODES } from "@shared/config/constants";
 import type { GameMode } from "../shared/types/game.types";
 
+export const isCrazyJumpsMode = (mode: GameMode): boolean =>
+  mode === GAME_MODES.CRAZY_JUMPS;
+
 export const getModeName = (mode: GameMode): string => {
   switch (mode) {
     case GAME_MODES.CLASSIC:
@@ -31,6 +34,10 @@ export const getModeNameShort = (mode: GameMode): string => {
       return "Режим";
   }
 };
+
+/** Сообщение, когда снова ход игрока после хода бота. */
+export const getPlayerTurnPromptMessage = (mode: GameMode): string =>
+  `${getModeNameShort(mode)} · выберите фигуру`;
 
 export const getModeStartMessage = (mode: GameMode): string =>
   `${getModeNameShort(mode)} · ваш ход`;

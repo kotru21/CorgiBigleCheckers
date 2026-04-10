@@ -8,9 +8,12 @@ import {
 import { getAllPossibleCaptures } from "../MoveService";
 import { boardUtils } from "../../utils/gameHelpers";
 import { logger } from "../../utils/logger";
-import type { Board } from "@shared/types/game.types";
+import { isCrazyJumpsMode } from "../../utils/modeHelpers";
+import type { Board, GameMode } from "@shared/types/game.types";
 
-export const evaluateBoard = (board: Board): number => {
+export const evaluateBoard = (board: Board, gameMode?: GameMode): number => {
+  const longMen =
+    gameMode !== undefined && isCrazyJumpsMode(gameMode);
   try {
     let score = 0;
     const { playerPieces, botPieces, playerKings, botKings } =
@@ -35,7 +38,8 @@ export const evaluateBoard = (board: Board): number => {
             board,
             row,
             col,
-            new Set()
+            new Set(),
+            longMen
           );
           botCaptures += allCaptures.length;
         } else if (piece === BOT_KING) {
@@ -47,7 +51,8 @@ export const evaluateBoard = (board: Board): number => {
             board,
             row,
             col,
-            new Set()
+            new Set(),
+            longMen
           );
           botCaptures += allCaptures.length;
         } else if (piece === PLAYER) {
@@ -56,7 +61,8 @@ export const evaluateBoard = (board: Board): number => {
             board,
             row,
             col,
-            new Set()
+            new Set(),
+            longMen
           );
           playerCaptures += allCaptures.length;
         } else if (piece === PLAYER_KING) {
@@ -65,7 +71,8 @@ export const evaluateBoard = (board: Board): number => {
             board,
             row,
             col,
-            new Set()
+            new Set(),
+            longMen
           );
           playerCaptures += allCaptures.length;
         }

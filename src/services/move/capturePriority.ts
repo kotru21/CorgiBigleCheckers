@@ -1,11 +1,20 @@
 import { EMPTY, BOARD_SIZE } from "@shared/config/constants";
 import { pieceUtils, boardUtils } from "../../utils/gameHelpers";
 import { logger } from "../../utils/logger";
-import type { Board, Move } from "@shared/types/game.types";
+import type { Board, GameMode, Move } from "@shared/types/game.types";
+import { isCrazyJumpsMode } from "../../utils/modeHelpers";
 import { getAllPossibleCaptures } from "./captures";
 import { getValidMoves } from "./validMoves";
 
-export const hasCaptures = (board: Board, isPlayer: boolean) => {
+const longMenForMode = (gameMode?: GameMode): boolean =>
+  gameMode !== undefined && isCrazyJumpsMode(gameMode);
+
+export const hasCaptures = (
+  board: Board,
+  isPlayer: boolean,
+  gameMode?: GameMode
+) => {
+  const longMen = longMenForMode(gameMode);
   try {
     let maxCaptures = 0;
 
@@ -22,7 +31,8 @@ export const hasCaptures = (board: Board, isPlayer: boolean) => {
             board,
             row,
             col,
-            new Set()
+            new Set(),
+            longMen
           );
           if (allCaptures.length > 0) {
             const maxCapturesForPiece = Math.max(
@@ -41,7 +51,12 @@ export const hasCaptures = (board: Board, isPlayer: boolean) => {
   }
 };
 
-export const getPiecesWithCaptures = (board: Board, isPlayer: boolean) => {
+export const getPiecesWithCaptures = (
+  board: Board,
+  isPlayer: boolean,
+  gameMode?: GameMode
+) => {
+  const longMen = longMenForMode(gameMode);
   try {
     const piecesWithCaptures: Array<{
       row: number;
@@ -63,7 +78,8 @@ export const getPiecesWithCaptures = (board: Board, isPlayer: boolean) => {
             board,
             row,
             col,
-            new Set()
+            new Set(),
+            longMen
           );
           if (allCaptures.length > 0) {
             const maxCapturesForPiece = Math.max(
@@ -88,7 +104,8 @@ export const getPiecesWithCaptures = (board: Board, isPlayer: boolean) => {
             board,
             row,
             col,
-            new Set()
+            new Set(),
+            longMen
           );
           const maxCapturesForPiece =
             allCaptures.length > 0
@@ -118,8 +135,10 @@ export const getPiecesWithCaptures = (board: Board, isPlayer: boolean) => {
 export const getValidMovesWithCapturePriority = (
   board: Board,
   row: number,
-  col: number
+  col: number,
+  gameMode?: GameMode
 ) => {
+  const longMen = longMenForMode(gameMode);
   try {
     const piece = board[row][col];
     if (piece === EMPTY || !boardUtils.isDarkSquare(row, col)) {
@@ -127,13 +146,19 @@ export const getValidMovesWithCapturePriority = (
     }
 
     const isPlayer = pieceUtils.isPlayerPiece(piece);
-    const playerHasCaptures = hasCaptures(board, isPlayer);
+    const playerHasCaptures = hasCaptures(board, isPlayer, gameMode);
 
     if (playerHasCaptures) {
-      const allCaptures = getAllPossibleCaptures(board, row, col, new Set());
+      const allCaptures = getAllPossibleCaptures(
+        board,
+        row,
+        col,
+        new Set(),
+        longMen
+      );
 
       if (allCaptures.length > 0) {
-        const allPlayerPieces = getPiecesWithCaptures(board, isPlayer);
+        const allPlayerPieces = getPiecesWithCaptures(board, isPlayer, gameMode);
         const globalMaxCaptures =
           allPlayerPieces.length > 0
             ? Math.max(
@@ -159,7 +184,7 @@ export const getValidMovesWithCapturePriority = (
       return { moves: [], captures: [], mustCapture: true } as const;
     }
 
-    return getValidMoves(board, row, col);
+    return getValidMoves(board, row, col, longMen);
   } catch (error) {
     logger.error(
       "Ошибка при получении ходов с приоритетом захвата:",

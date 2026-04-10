@@ -30,17 +30,6 @@ export type Board = PieceType[][];
 
 export type GameMode = "classic" | "crazy_jumps" | "party_mode" | "turbo";
 
-export interface GameState {
-  board: Board;
-  currentPlayer: Player;
-  selectedPiece: Position | null;
-  validMoves: Move[];
-  gameOver: boolean;
-  gameMode: GameMode;
-  message: string;
-  isFullscreen?: boolean;
-}
-
 export interface MinimaxResult {
   move: {
     fromRow: number;

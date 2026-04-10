@@ -2,10 +2,13 @@ import { BOARD_SIZE } from "@shared/config/constants";
 import { getValidMovesWithCapturePriority } from "../MoveService";
 import { boardUtils, pieceUtils } from "../../utils/gameHelpers";
 import { logger } from "../../utils/logger";
-import type { Board } from "@shared/types/game.types";
+import type { Board, GameMode } from "@shared/types/game.types";
 import type { SearchMove } from "./types";
 
-export const getAllBotMoves = (board: Board): SearchMove[] => {
+export const getAllBotMoves = (
+  board: Board,
+  gameMode?: GameMode
+): SearchMove[] => {
   const moves: SearchMove[] = [];
 
   try {
@@ -19,7 +22,7 @@ export const getAllBotMoves = (board: Board): SearchMove[] => {
 
         if (pieceUtils.isBotPiece(piece)) {
           const { moves: pieceMoves, mustCapture } =
-            getValidMovesWithCapturePriority(board, row, col);
+            getValidMovesWithCapturePriority(board, row, col, gameMode);
 
           pieceMoves.forEach((move) => {
             moves.push({
@@ -42,7 +45,10 @@ export const getAllBotMoves = (board: Board): SearchMove[] => {
   }
 };
 
-export const getAllPlayerMoves = (board: Board): SearchMove[] => {
+export const getAllPlayerMoves = (
+  board: Board,
+  gameMode?: GameMode
+): SearchMove[] => {
   const moves: SearchMove[] = [];
 
   try {
@@ -56,7 +62,7 @@ export const getAllPlayerMoves = (board: Board): SearchMove[] => {
 
         if (pieceUtils.isPlayerPiece(piece)) {
           const { moves: pieceMoves, mustCapture } =
-            getValidMovesWithCapturePriority(board, row, col);
+            getValidMovesWithCapturePriority(board, row, col, gameMode);
 
           pieceMoves.forEach((move) => {
             moves.push({

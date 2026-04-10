@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { GAME_CONFIG } from "@shared/config/constants";
 import type { PerformanceMode, PerformanceMonitorProps } from "../types";
 
 export function PerformanceMonitor({
@@ -22,10 +23,11 @@ export function PerformanceMonitor({
     if (elapsed > 500) {
       fps.current = Math.round((frameCount.current / elapsed) * 1000);
 
+      const { FPS_MEDIUM_BAND, FPS_LOW_BAND } = GAME_CONFIG.PERFORMANCE;
       let newMode: PerformanceMode = "high";
-      if (fps.current < 20) {
+      if (fps.current < FPS_LOW_BAND) {
         newMode = "low";
-      } else if (fps.current < 40) {
+      } else if (fps.current < FPS_MEDIUM_BAND) {
         newMode = "medium";
       }
 

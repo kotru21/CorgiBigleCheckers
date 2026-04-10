@@ -1,6 +1,6 @@
 import { executeMove } from "../MoveService";
 import { logger } from "../../utils/logger";
-import type { Board } from "@shared/types/game.types";
+import type { Board, GameMode } from "@shared/types/game.types";
 import type {
   SearchMove,
   MinimaxResultInternal,
@@ -16,10 +16,11 @@ export const minimaxAlphaBeta = (
   depth: number,
   alpha: number,
   beta: number,
-  isMaximizing: boolean
+  isMaximizing: boolean,
+  gameMode?: GameMode
 ): MinimaxResultInternal => {
   const boardKey = JSON.stringify(board);
-  const cacheKey = `${boardKey}-${depth}-${isMaximizing}`;
+  const cacheKey = `${boardKey}-${depth}-${isMaximizing}-${gameMode ?? "classic"}`;
 
   const cachedResult = transpositionTable.get(cacheKey);
   if (cachedResult !== undefined) {
@@ -29,7 +30,7 @@ export const minimaxAlphaBeta = (
   try {
     if (depth === 0) {
       const result: MinimaxResultInternal = {
-        score: evaluateBoard(board),
+        score: evaluateBoard(board, gameMode),
         move: null,
       };
       transpositionTable.set(cacheKey, result);
@@ -37,8 +38,8 @@ export const minimaxAlphaBeta = (
     }
 
     const moves = isMaximizing
-      ? getAllBotMoves(board)
-      : getAllPlayerMoves(board);
+      ? getAllBotMoves(board, gameMode)
+      : getAllPlayerMoves(board, gameMode);
 
     if (moves.length === 0) {
       const result: MinimaxResultInternal = {
@@ -68,7 +69,8 @@ export const minimaxAlphaBeta = (
           depth - 1,
           alpha,
           beta,
-          false
+          false,
+          gameMode
         );
 
         if (evalResult.score > maxEval) {
@@ -102,7 +104,8 @@ export const minimaxAlphaBeta = (
           depth - 1,
           alpha,
           beta,
-          true
+          true,
+          gameMode
         );
 
         if (evalResult.score < minEval) {
@@ -126,14 +129,25 @@ export const minimaxAlphaBeta = (
   }
 };
 
-export const getBestMove = (board: Board, depth: number): SearchMove | null => {
+export const getBestMove = (
+  board: Board,
+  depth: number,
+  gameMode?: GameMode
+): SearchMove | null => {
   try {
     if (transpositionTable.size > 1000) {
       transpositionTable.clear();
       logger.debug("Очищен кэш транспозиционных таблиц");
     }
 
-    const result = minimaxAlphaBeta(board, depth, -Infinity, Infinity, true);
+    const result = minimaxAlphaBeta(
+      board,
+      depth,
+      -Infinity,
+      Infinity,
+      true,
+      gameMode
+    );
     logger.debug(`Найден лучший ход с оценкой: ${result.score}`);
     return result.move;
   } catch (error) {

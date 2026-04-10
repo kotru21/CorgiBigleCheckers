@@ -3,6 +3,7 @@ import { Board3D, type PieceAnimationInfo } from "./Board3D";
 import { useGame } from "../store/gameStore";
 import { useAnimationStore } from "../store/animationStore";
 import RulesModal from "./RulesModal";
+import { ModeSelector } from "./ModeSelector";
 import {
   getValidMovesWithCapturePriority,
   executeMove,
@@ -13,7 +14,8 @@ import { PLAYER, PERFORMANCE_MODES } from "@shared/config/constants";
 import { useBotAI } from "../hooks/useBotAI";
 import { pieceUtils } from "../utils/gameHelpers";
 import { logger } from "../utils/logger";
-import type { Move, Player, GameMode } from "@shared/types/game.types";
+import { getModeStartMessage } from "../utils/modeHelpers";
+import type { Move, Player } from "@shared/types/game.types";
 
 type PerformanceMode =
   (typeof PERFORMANCE_MODES)[keyof typeof PERFORMANCE_MODES];
@@ -45,6 +47,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
   const [showFpsInfo, setShowFpsInfo] = useState(false);
   const [currentFps, setCurrentFps] = useState(60);
   const [showRules, setShowRules] = useState(false);
+  const [modeSelectorOpen, setModeSelectorOpen] = useState(false);
   const [currentAnimation, setCurrentAnimation] =
     useState<PieceAnimationInfo | null>(null);
 
@@ -63,7 +66,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
           captures: Move[];
         }>;
       }
-      return getPiecesWithCaptures(board, true);
+      return getPiecesWithCaptures(board, true, gameMode);
     } catch (error) {
       logger.error(
         "Ошибка при получении фигур с захватами:",
@@ -71,7 +74,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
       );
       return [] as Array<{ row: number; col: number; captures: Move[] }>;
     }
-  }, [board, playerTurn]);
+  }, [board, playerTurn, gameMode]);
 
   const handlePerformanceData = useCallback(
     (fps: number, mode: PerformanceMode) => {
@@ -115,7 +118,8 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
         const { moves, mustCapture } = getValidMovesWithCapturePriority(
           board,
           row,
-          col
+          col,
+          gameMode
         );
         setSelectedPiece({ row, col });
         setValidMoves([...moves]);
@@ -133,7 +137,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
         setGameMessage("Ошибка при выборе фигуры. Попробуйте снова.");
       }
     },
-    [board, setSelectedPiece, setValidMoves, setGameMessage]
+    [board, gameMode, setSelectedPiece, setValidMoves, setGameMessage]
   );
 
   const handlePieceSelect = useCallback(
@@ -169,7 +173,12 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
 
                 if (wasCapture) {
                   const { moves: continuedCaptures, mustCapture } =
-                    getValidMovesWithCapturePriority(newBoard, row, col);
+                    getValidMovesWithCapturePriority(
+                      newBoard,
+                      row,
+                      col,
+                      gameMode
+                    );
 
                   if (mustCapture && continuedCaptures.length > 0) {
                     setSelectedPiece({ row, col });
@@ -185,7 +194,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
                 setPlayerTurn(false);
                 setGameMessage("Ход корги...");
 
-                const gameStatus = checkGameStatus(newBoard);
+                const gameStatus = checkGameStatus(newBoard, gameMode);
                 if (gameStatus) {
                   handleGameOver(gameStatus);
                 }
@@ -231,6 +240,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
       setSelectedPiece,
       setValidMoves,
       startAnimation,
+      gameMode,
     ]
   );
 
@@ -245,7 +255,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
       setBoard(newBoard);
       setGameOver(false);
       setPlayerTurn(true);
-      setGameMessage("Новая партия · ваш ход");
+      setGameMessage(getModeStartMessage(gameMode));
       setSelectedPiece(null);
       setValidMoves([]);
       logger.info("Начата новая игра");
@@ -259,6 +269,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
       boardCreationRef.current = false;
     }
   }, [
+    gameMode,
     setBoard,
     setGameOver,
     setPlayerTurn,
@@ -298,7 +309,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
           validMoves={validMoves}
           onPerformanceData={handlePerformanceData}
           piecesWithCaptures={piecesWithCaptures}
-          gameMode={gameMode as GameMode}
+          gameMode={gameMode}
           currentAnimation={currentAnimation}
         />
       </div>
@@ -333,6 +344,13 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
               className={hudBtnClass}
               title="Правила">
               ?
+            </button>
+            <button
+              type="button"
+              onClick={() => setModeSelectorOpen(true)}
+              className={hudBtnClass}
+              title="Сменить режим">
+              Режим
             </button>
             <button
               type="button"
@@ -387,6 +405,9 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
       )}
 
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
+      {modeSelectorOpen && (
+        <ModeSelector onClose={() => setModeSelectorOpen(false)} />
+      )}
     </div>
   );
 }

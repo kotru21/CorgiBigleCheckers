@@ -9,6 +9,7 @@ import {
 import { checkGameStatus } from "../services/BoardService";
 import { GAME_CONFIG, GAME_MODES } from "@shared/config/constants";
 import { logger } from "../utils/logger";
+import { getPlayerTurnPromptMessage } from "../utils/modeHelpers";
 import type { Board } from "@shared/types/game.types";
 import type { PieceAnimationInfo } from "../components/Board3D";
 
@@ -127,7 +128,7 @@ export const useBotAI = ({ setCurrentAnimation }: UseBotAIProps) => {
           return;
         }
 
-        const bestMove = getBestMove(currentBoard as Board, depth);
+        const bestMove = getBestMove(currentBoard as Board, depth, gameMode);
 
         if (!bestMove) {
           logger.warn("Бот не смог найти допустимый ход");
@@ -166,7 +167,8 @@ export const useBotAI = ({ setCurrentAnimation }: UseBotAIProps) => {
               getValidMovesWithCapturePriority(
                 workingBoard,
                 targetRow,
-                targetCol
+                targetCol,
+                gameMode
               );
 
             if (mustCapture && continuedCaptures.length > 0) {
@@ -205,9 +207,9 @@ export const useBotAI = ({ setCurrentAnimation }: UseBotAIProps) => {
         setPlayerTurn(true);
         setSelectedPiece(null);
         setValidMoves([]);
-        setGameMessage("Бигли · выберите фигуру");
+        setGameMessage(getPlayerTurnPromptMessage(gameMode));
 
-        const gameStatus = checkGameStatus(workingBoard);
+        const gameStatus = checkGameStatus(workingBoard, gameMode);
         if (gameStatus) {
           setGameOver(true);
           const message =

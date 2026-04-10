@@ -18,14 +18,6 @@ export const MOVE_TYPES = {
   MULTI_CAPTURE: "multi_capture",
 } as const;
 
-export const GAME_STATES = {
-  MENU: "menu",
-  PLAYING: "playing",
-  PAUSED: "paused",
-  GAME_OVER: "game_over",
-  RULES_MODAL: "rules_modal",
-} as const;
-
 export const PERFORMANCE_MODES = {
   HIGH: "high",
   MEDIUM: "medium",
@@ -73,6 +65,10 @@ export const GAME_CONFIG = {
     FPS_TARGET: 60,
     FPS_WARNING_THRESHOLD: 30,
     FPS_CRITICAL_THRESHOLD: 15,
+    /** Ниже этого FPS включается режим medium (если ≥ FPS_LOW_BAND). */
+    FPS_MEDIUM_BAND: 40,
+    /** Ниже этого FPS включается режим low. */
+    FPS_LOW_BAND: 20,
   },
 } as const;
 

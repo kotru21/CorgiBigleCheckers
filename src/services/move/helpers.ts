@@ -176,8 +176,10 @@ export const findRegularCaptures = (
   piece: string | null,
   isPlayer: boolean,
   visited: Set<string>,
-  resolveCaptures: CaptureResolver
+  resolveCaptures: CaptureResolver,
+  options?: { longMenCaptures?: boolean }
 ): Move[] => {
+  const longMenCaptures = options?.longMenCaptures === true;
   const captures: Move[] = [];
   const newRow = row + rowDir;
   const newCol = col + colDir;
@@ -189,21 +191,51 @@ export const findRegularCaptures = (
   const cellPiece = board[newRow][newCol];
 
   if (isEnemyPiece(cellPiece, isPlayer)) {
-    const jumpRow = newRow + rowDir;
-    const jumpCol = newCol + colDir;
+    const enemyR = newRow;
+    const enemyC = newCol;
 
-    if (
-      boardUtils.isValidSquare(jumpRow, jumpCol) &&
-      board[jumpRow][jumpCol] === EMPTY
-    ) {
+    const landingSquares: Array<{ jumpRow: number; jumpCol: number }> = [];
+
+    if (longMenCaptures) {
+      let distance = 1;
+      while (true) {
+        const jumpRow = enemyR + rowDir * distance;
+        const jumpCol = enemyC + colDir * distance;
+
+        if (!boardUtils.isValidSquare(jumpRow, jumpCol)) {
+          break;
+        }
+        if (!boardUtils.isDarkSquare(jumpRow, jumpCol)) {
+          distance++;
+          continue;
+        }
+        if (board[jumpRow][jumpCol] === EMPTY) {
+          landingSquares.push({ jumpRow, jumpCol });
+          distance++;
+        } else {
+          break;
+        }
+      }
+    } else {
+      const jumpRow = enemyR + rowDir;
+      const jumpCol = enemyC + colDir;
+      if (
+        boardUtils.isValidSquare(jumpRow, jumpCol) &&
+        board[jumpRow][jumpCol] === EMPTY
+      ) {
+        landingSquares.push({ jumpRow, jumpCol });
+      }
+    }
+
+    for (const { jumpRow, jumpCol } of landingSquares) {
       const tempBoard = createTempBoard(
         board,
         row,
         col,
         jumpRow,
         jumpCol,
-        newRow,
-        newCol
+        enemyR,
+        enemyC
       );
       const continuedCaptures = resolveCaptures(
         tempBoard,
@@ -213,7 +245,7 @@ export const findRegularCaptures = (
       );
 
       captures.push(
-        createCaptureMove(jumpRow, jumpCol, newRow, newCol, continuedCaptures)
+        createCaptureMove(jumpRow, jumpCol, enemyR, enemyC, continuedCaptures)
       );
     }
   }

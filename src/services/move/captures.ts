@@ -13,7 +13,8 @@ export const getAllPossibleCaptures = (
   board: Board,
   row: number,
   col: number,
-  visited: Set<string> | string[] = new Set()
+  visited: Set<string> | string[] = new Set(),
+  longMenCaptures = false
 ): Move[] => {
   const visitedSet =
     visited instanceof Set ? new Set(visited) : new Set(visited);
@@ -36,7 +37,14 @@ export const getAllPossibleCaptures = (
         nextRow: number,
         nextCol: number,
         nextVisited: Set<string>
-      ) => getAllPossibleCaptures(nextBoard, nextRow, nextCol, nextVisited);
+      ) =>
+        getAllPossibleCaptures(
+          nextBoard,
+          nextRow,
+          nextCol,
+          nextVisited,
+          longMenCaptures
+        );
 
       if (isKing) {
         captures.push(
@@ -63,7 +71,8 @@ export const getAllPossibleCaptures = (
             piece,
             isPlayer,
             visitedSet,
-            resolver
+            resolver,
+            { longMenCaptures }
           )
         );
       }
