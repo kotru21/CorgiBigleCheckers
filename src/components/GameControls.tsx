@@ -9,7 +9,7 @@ export function GameControls() {
     setBoard(newBoard);
     setGameOver(false);
     setPlayerTurn(true);
-    setGameMessage("Новая игра! Ваш ход!");
+    setGameMessage("Новая партия · ваш ход");
   };
 
   return (

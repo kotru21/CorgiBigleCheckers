@@ -50,10 +50,8 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
 
   const boardCreationRef = useRef(false);
 
-  // Подключаем store анимаций
   const { startAnimation, isAnimating } = useAnimationStore();
 
-  // Bot AI - передаём setCurrentAnimation для плавных анимаций бота
   useBotAI({ setCurrentAnimation });
 
   const piecesWithCaptures = useMemo(() => {
@@ -158,7 +156,6 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
             const fromRow = selectedPiece.row;
             const fromCol = selectedPiece.col;
 
-            // Запускаем анимацию перед обновлением доски
             const animationId = startAnimation(
               fromRow,
               fromCol,
@@ -166,7 +163,6 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
               col,
               wasCapture,
               () => {
-                // Колбэк вызывается после завершения анимации
                 const newBoard = executeMove(board, fromRow, fromCol, row, col);
                 setBoard(newBoard);
                 setCurrentAnimation(null);
@@ -196,7 +192,6 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
               }
             );
 
-            // Устанавливаем текущую анимацию для передачи в Board3D
             setCurrentAnimation({
               fromRow,
               fromCol,
@@ -250,7 +245,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
       setBoard(newBoard);
       setGameOver(false);
       setPlayerTurn(true);
-      setGameMessage("Новая игра! Ваш ход!");
+      setGameMessage("Новая партия · ваш ход");
       setSelectedPiece(null);
       setValidMoves([]);
       logger.info("Начата новая игра");
@@ -281,47 +276,21 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
     }
   }, [onReturnToMenu]);
 
+  const perfDotClass =
+    performanceMode === "high"
+      ? "bg-zinc-400"
+      : performanceMode === "medium"
+        ? "bg-amber-400"
+        : "bg-red-500";
+
+  const hudBtnClass =
+    "inline-flex h-8 min-h-8 shrink-0 items-center justify-center gap-1 rounded-full bg-black/45 px-2.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-zinc-100 shadow-sm backdrop-blur-md transition-[background-color,color] duration-200 cursor-pointer hover:bg-black/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/80 sm:px-3";
+
   return (
     <div
       id="chess-board-container"
-      className="fixed inset-0 w-screen h-screen overflow-hidden bg-linear-to-br from-gray-900 via-gray-800 to-gray-900">
-      <div className="absolute top-2 left-2 z-10 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-md text-white font-medium">
-        {gameMessage}
-      </div>
-
-      <div
-        className="absolute mr-12 top-2 right-36 z-10 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-md text-white font-medium cursor-pointer"
-        onClick={() => setShowFpsInfo((prev) => !prev)}>
-        <span
-          className={`inline-block w-3 h-3 rounded-full mr-2 ${
-            performanceMode === "high"
-              ? "bg-green-500"
-              : performanceMode === "medium"
-                ? "bg-yellow-500"
-                : "bg-red-500"
-          }`}></span>
-        {showFpsInfo ? `${currentFps} FPS` : "Производительность"}
-      </div>
-
-      <button
-        onClick={() => setShowRules(true)}
-        className="absolute top-2 right-20 z-10 px-3 py-1 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-md text-white transition-colors">
-        Правила
-      </button>
-
-      <button
-        onClick={handleReturnToMenu}
-        className="absolute top-2 right-2 z-10 px-3 py-1 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-md text-white transition-colors">
-        Меню
-      </button>
-
-      {playerTurn && !gameOver && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 px-4 py-2 bg-black/40 backdrop-blur-sm rounded-md text-white text-sm">
-          {selectedPiece ? "Выберите поле для хода" : "Выберите бигля для хода"}
-        </div>
-      )}
-
-      <div className="w-full h-full">
+      className="fixed inset-0 min-h-dvh min-w-0 overflow-hidden bg-black">
+      <div className="absolute inset-0 z-0">
         <Board3D
           board={board}
           onPieceSelect={handlePieceSelect}
@@ -334,21 +303,82 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
         />
       </div>
 
+      <div className="pointer-events-none absolute inset-0 z-20 flex flex-col">
+        <div className="safe-pt safe-px flex w-full shrink-0 items-center gap-1.5 pt-1.5 sm:gap-2 sm:pt-2">
+          <p
+            className="pointer-events-none flex h-8 min-h-8 min-w-0 max-w-[min(100%,15.5rem)] items-center rounded-full bg-black/40 px-2.5 text-left text-[10px] leading-none text-zinc-100 shadow-sm backdrop-blur-md sm:max-w-[18rem] sm:px-3 sm:text-[11px]"
+            role="status"
+            aria-live="polite"
+            title={gameMessage}>
+            <span className="min-w-0 truncate">{gameMessage}</span>
+          </p>
+          <div className="pointer-events-auto ml-auto flex h-8 min-h-8 shrink-0 items-center justify-center gap-1.5">
+            <button
+              type="button"
+              className={`${hudBtnClass} ${showFpsInfo ? "text-cyan-200" : ""}`}
+              onClick={() => setShowFpsInfo((prev) => !prev)}
+              aria-pressed={showFpsInfo}
+              title="Производительность / FPS">
+              <span
+                className={`inline-block size-1.5 shrink-0 rounded-full ${perfDotClass}`}
+                aria-hidden
+              />
+              <span className="tabular-nums">
+                {showFpsInfo ? `${currentFps}` : "FPS"}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowRules(true)}
+              className={hudBtnClass}
+              title="Правила">
+              ?
+            </button>
+            <button
+              type="button"
+              onClick={handleReturnToMenu}
+              className={`${hudBtnClass} text-cyan-200`}
+              title="В главное меню">
+              Меню
+            </button>
+          </div>
+        </div>
+
+        {playerTurn && !gameOver && (
+          <div className="safe-pb safe-px pointer-events-none mt-auto flex justify-center pb-2 sm:pb-3">
+            <p className="rounded-full bg-black/40 px-3 py-1 text-center text-[10px] text-zinc-200/95 shadow-sm backdrop-blur-md sm:text-[11px]">
+              {selectedPiece
+                ? "Коснитесь клетки для хода"
+                : "Коснитесь бигля, чтобы походить"}
+            </p>
+          </div>
+        )}
+      </div>
+
       {gameOver && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-20">
-          <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-2xl text-center max-w-md mx-4">
-            <h2 className="text-2xl font-bold mb-4 text-white">
+        <div
+          className="safe-pt safe-pb safe-px fixed inset-0 z-30 flex items-end justify-center bg-black/65 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="game-over-title">
+          <div className="w-full max-w-sm animate-[appear_0.35s_ease-out] rounded-t-2xl border border-zinc-700/90 bg-(--color-surface) p-4 shadow-2xl backdrop-blur-xl sm:max-w-md sm:rounded-2xl sm:p-6">
+            <div className="mb-4 h-0.5 w-12 rounded-full bg-cyan-400/80 sm:mx-auto" />
+            <h2
+              id="game-over-title"
+              className="font-display mb-4 text-center text-lg font-bold leading-snug text-zinc-100 sm:text-xl">
               {gameMessage}
             </h2>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
               <button
+                type="button"
                 onClick={handleNewGame}
-                className="flex-1 px-6 py-3 bg-linear-to-r from-purple-500 to-blue-500 text-white rounded-lg shadow-lg hover:from-purple-600 hover:to-blue-600 transition-colors">
+                className="min-h-11 flex-1 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-bold text-zinc-950 shadow-lg transition-[filter] duration-200 cursor-pointer hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
                 Новая игра
               </button>
               <button
+                type="button"
                 onClick={handleReturnToMenu}
-                className="flex-1 px-6 py-3 bg-linear-to-r from-gray-500 to-gray-700 text-white rounded-lg shadow-lg hover:from-gray-600 hover:to-gray-800 transition-colors">
+                className="min-h-11 flex-1 rounded-xl border border-zinc-600 bg-zinc-800/80 px-4 py-2.5 text-sm font-semibold text-zinc-200 transition-colors duration-200 cursor-pointer hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500">
                 В меню
               </button>
             </div>

@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef } from "react";
 import "./RulesModal.css";
 
 interface RulesModalProps {
@@ -5,11 +6,43 @@ interface RulesModalProps {
 }
 
 const RulesModal = ({ onClose }: RulesModalProps) => {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
+  useEffect(() => {
+    const previousActive = document.activeElement;
+    closeButtonRef.current?.focus();
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      if (previousActive instanceof HTMLElement && document.contains(previousActive)) {
+        previousActive.focus();
+      }
+    };
+  }, [handleKeyDown]);
+
   return (
-    <div className="rules-modal-overlay">
-      <div className="rules-modal">
-        <h2>Правила международных шашек (стоклеточных)</h2>
-        <p className="text-center">Вадим если ты не умеешь то учись</p>
+    <div className="rules-modal-overlay" role="presentation">
+      <div
+        className="rules-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rules-modal-title">
+        <h2 id="rules-modal-title">
+          Правила международных шашек (10×10)
+        </h2>
+        <p className="rules-lead">
+          Краткая памятка: игра только по тёмным клеткам, взятия обязательны.
+        </p>
         <div className="rules-content">
           <h3>Основные правила:</h3>
           <ul>
@@ -87,7 +120,11 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
           </ul>
         </div>
 
-        <button className="close-button" onClick={onClose}>
+        <button
+          ref={closeButtonRef}
+          type="button"
+          className="close-button"
+          onClick={onClose}>
           Закрыть
         </button>
       </div>

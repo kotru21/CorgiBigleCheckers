@@ -205,7 +205,7 @@ export const useBotAI = ({ setCurrentAnimation }: UseBotAIProps) => {
         setPlayerTurn(true);
         setSelectedPiece(null);
         setValidMoves([]);
-        setGameMessage("Ваш ход! Выберите фигуру для хода.");
+        setGameMessage("Бигли · выберите фигуру");
 
         const gameStatus = checkGameStatus(workingBoard);
         if (gameStatus) {

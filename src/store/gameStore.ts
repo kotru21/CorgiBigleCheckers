@@ -31,7 +31,7 @@ export interface GameStore {
   switchTurn: () => void;
 }
 
-const initialMessage = "Ваш ход! Вы играете за Биглей.";
+const initialMessage = "Вы за биглей · ваш ход";
 
 export const useGameStore = create<GameStore>((set, get) => ({
   board: createInitialBoard() as Board,
@@ -52,7 +52,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setGameMessage: (gameMessage) => set({ gameMessage }),
   setIsFullscreen: (isFullscreen) => set({ isFullscreen }),
 
-  resetGame: (message = "Новая игра! Ваш ход!") =>
+  resetGame: (message = "Новая партия · ваш ход") =>
     set(() => ({
       board: createInitialBoard() as Board,
       gameOver: false,

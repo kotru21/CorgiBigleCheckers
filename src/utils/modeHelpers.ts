@@ -15,3 +15,22 @@ export const getModeName = (mode: GameMode): string => {
       return "Неизвестный";
   }
 };
+
+/** Короткая подпись для статуса в игре (одна строка). */
+export const getModeNameShort = (mode: GameMode): string => {
+  switch (mode) {
+    case GAME_MODES.CLASSIC:
+      return "Классика";
+    case GAME_MODES.CRAZY_JUMPS:
+      return "Прыжки";
+    case GAME_MODES.PARTY_MODE:
+      return "Вечеринка";
+    case GAME_MODES.TURBO:
+      return "Турбо";
+    default:
+      return "Режим";
+  }
+};
+
+export const getModeStartMessage = (mode: GameMode): string =>
+  `${getModeNameShort(mode)} · ваш ход`;

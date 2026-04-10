@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useGame } from "../store/gameStore";
-import { GAME_MODES } from "@shared/config/constants";
+import {
+  MENU_MODE_CARD_CLASS,
+  MENU_MODE_ITEMS,
+} from "@shared/config/menuModeItems";
 import { createInitialBoard } from "../services/BoardService";
-import { getModeName } from "../utils/modeHelpers";
+import { getModeStartMessage } from "../utils/modeHelpers";
 import RulesModal from "./RulesModal";
 import type { GameMode } from "@shared/types/game.types";
 
@@ -21,66 +24,48 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
     setBoard(newBoard);
     setPlayerTurn(true);
     setGameOver(false);
-    setGameMessage(`Режим ${getModeName(mode)}! Ваш ход!`);
+    setGameMessage(getModeStartMessage(mode));
     onStartGame();
   };
 
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-      <div className="max-w-md w-full p-6 bg-white/10 backdrop-blur-md rounded-xl shadow-2xl text-white">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-purple-600">
-          Корги против Биглей
-        </h1>
+    <div className="fixed inset-0 flex h-dvh max-h-dvh flex-col overflow-hidden bg-zinc-950 bg-linear-to-b from-zinc-950 via-zinc-900 to-black">
+      <div className="safe-pt safe-pb safe-px flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain px-2 pb-2 pt-1 sm:px-4 sm:pb-3 sm:pt-2">
+        <div className="mx-auto my-auto w-full max-w-md shrink-0 flex flex-col rounded-2xl border border-zinc-800/90 bg-(--color-surface) shadow-xl backdrop-blur-md sm:max-w-lg sm:rounded-3xl">
+          <header className="shrink-0 border-b border-zinc-800/80 px-3 py-2 sm:px-4 sm:py-2.5">
+            <p className="font-display text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-400/90 sm:text-xs">
+              Шашки 10×10
+            </p>
+            <h1 className="font-display text-lg font-bold leading-tight text-zinc-100 sm:text-2xl">
+              Корги против биглей
+            </h1>
+          </header>
 
-        <p className="mb-6 text-center text-gray-200">
-          Выберите режим игры и начните битву между биглями и корги!
-        </p>
+          <div className="px-3 py-2 sm:px-4 sm:py-2.5">
+            <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+              {MENU_MODE_ITEMS.map(({ mode, title, blurb }) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => handleSelectMode(mode)}
+                  className={MENU_MODE_CARD_CLASS}>
+                  <span className="font-display text-sm font-bold leading-tight text-zinc-100 sm:text-base">
+                    {title}
+                  </span>
+                  <span className="line-clamp-2 text-[10px] leading-snug text-zinc-500 sm:text-xs">
+                    {blurb}
+                  </span>
+                </button>
+              ))}
+            </div>
 
-        <div className="grid gap-4">
-          <button
-            onClick={() => handleSelectMode(GAME_MODES.CLASSIC)}
-            className="p-4 bg-linear-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
-            <span className="block text-xl font-bold">Классический</span>
-            <span className="text-sm opacity-80">
-              Стандартные правила шашек
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleSelectMode(GAME_MODES.CRAZY_JUMPS)}
-            className="p-4 bg-linear-to-r from-purple-500 to-pink-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
-            <span className="block text-xl font-bold">Безумные прыжки</span>
-            <span className="text-sm opacity-80">
-              Возможны прыжки через всю доску
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleSelectMode(GAME_MODES.PARTY_MODE)}
-            className="p-4 bg-linear-to-r from-pink-500 to-orange-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
-            <span className="block text-xl font-bold">Режим вечеринки</span>
-            <span className="text-sm opacity-80">
-              Случайные эффекты и повороты фигур
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleSelectMode(GAME_MODES.TURBO)}
-            className="p-4 bg-linear-to-r from-green-500 to-teal-600 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
-            <span className="block text-xl font-bold">Турбо режим</span>
-            <span className="text-sm opacity-80">
-              Ускоренный темп игры с быстрым ботом
-            </span>
-          </button>
-
-          <button
-            onClick={() => setShowRules(true)}
-            className="p-3 bg-linear-to-r from-gray-600 to-gray-700 text-white rounded-lg shadow-lg transition-transform hover:scale-105">
-            <span className="block text-lg font-bold">Правила игры</span>
-            <span className="text-sm opacity-80">
-              Узнайте как играть в международные шашки
-            </span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setShowRules(true)}
+              className="mt-2 flex min-h-9 w-full items-center justify-center rounded-xl border border-dashed border-zinc-600/90 bg-zinc-900/50 px-3 py-1.5 text-sm font-semibold text-zinc-300 transition-colors duration-200 cursor-pointer hover:border-cyan-500/40 hover:bg-cyan-950/30 hover:text-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/70 sm:mt-2.5">
+              Правила игры
+            </button>
+          </div>
         </div>
       </div>
 
