@@ -1,4 +1,4 @@
-import { useGame } from "../store/gameStore";
+import { beginMatchFromUI } from "../store/matchSessionActions";
 import {
   MENU_MODE_CARD_CLASS,
   MENU_MODE_ITEMS,
@@ -10,10 +10,8 @@ interface ModeSelectorProps {
 }
 
 export function ModeSelector({ onClose }: ModeSelectorProps) {
-  const beginMatch = useGame((s) => s.beginMatch);
-
   const handleSelectMode = (mode: GameMode) => {
-    beginMatch(mode);
+    beginMatchFromUI(mode);
     onClose();
   };
 

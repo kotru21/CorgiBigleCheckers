@@ -2,6 +2,7 @@ import {
   useState,
   useCallback,
   useMemo,
+  useEffect,
   type Dispatch,
   type SetStateAction,
 } from "react";
@@ -9,6 +10,7 @@ import type { PieceAnimationInfo } from "@shared/types/pieceAnimation.types";
 import type { Board, GameMode, Move, Player, Position } from "@shared/types/game.types";
 import { PLAYER, PERFORMANCE_MODES } from "@shared/config/constants";
 import { useGame } from "../store/gameStore";
+import { restartMatchFromUI } from "../store/matchSessionActions";
 import { useAnimationStore } from "../store/animationStore";
 import {
   getValidMovesWithCapturePriority,
@@ -20,9 +22,10 @@ import { useBotAI } from "./useBotAI";
 import { pieceUtils } from "../utils/gameHelpers";
 import { logger } from "../utils/logger";
 import { useTransientActionLock } from "./useTransientActionLock";
+import type { CaptureSquareRef } from "../game/squareVisualState";
 
-/** Совместимо с `CaptureInfo` из Board3D (подсветка обязательных взятий). */
-type PieceCaptureHighlight = { row: number; col: number; captures: Move[] };
+/** Как `CaptureInfo` в Board3D: клетка + список захватов для подсветки. */
+type PieceCaptureHighlight = CaptureSquareRef & { captures: Move[] };
 
 type PerformanceMode =
   (typeof PERFORMANCE_MODES)[keyof typeof PERFORMANCE_MODES];
@@ -49,8 +52,6 @@ export interface UseGameBoardControllerResult {
   currentFps: number;
   showFpsInfo: boolean;
   setShowFpsInfo: Dispatch<SetStateAction<boolean>>;
-  perfDotClass: string;
-  hudBtnClass: string;
 }
 
 export function useGameBoardController({
@@ -70,7 +71,6 @@ export function useGameBoardController({
     gameMessage,
     setGameMessage,
     gameMode,
-    restartMatch,
   } = useGame();
 
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>(
@@ -86,6 +86,11 @@ export function useGameBoardController({
   const { startAnimation, isAnimating } = useAnimationStore();
 
   useBotAI({ setCurrentAnimation });
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- сброс оверлея при смене доски (режим/рестарт из стора)
+    setCurrentAnimation(null);
+  }, [board]);
 
   const piecesWithCaptures = useMemo(() => {
     try {
@@ -273,7 +278,8 @@ export function useGameBoardController({
   const handleNewGame = useCallback(() => {
     runNewGameLocked(() => {
       try {
-        restartMatch();
+        setCurrentAnimation(null);
+        restartMatchFromUI();
         logger.info("Начата новая игра");
       } catch (error) {
         logger.error(
@@ -283,7 +289,7 @@ export function useGameBoardController({
         setGameMessage("Ошибка при создании новой игры.");
       }
     });
-  }, [restartMatch, runNewGameLocked, setGameMessage]);
+  }, [runNewGameLocked, setGameMessage, setCurrentAnimation]);
 
   const handleReturnToMenu = useCallback(() => {
     try {
@@ -293,16 +299,6 @@ export function useGameBoardController({
       logger.error("Ошибка при возврате в меню:", (error as Error).message);
     }
   }, [onReturnToMenu]);
-
-  const perfDotClass =
-    performanceMode === "high"
-      ? "bg-zinc-400"
-      : performanceMode === "medium"
-        ? "bg-amber-400"
-        : "bg-red-500";
-
-  const hudBtnClass =
-    "inline-flex h-8 min-h-8 shrink-0 items-center justify-center gap-1 rounded-full bg-black/45 px-2.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-zinc-100 shadow-sm backdrop-blur-md transition-[background-color,color] duration-200 cursor-pointer hover:bg-black/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/80 sm:px-3";
 
   return {
     board,
@@ -322,7 +318,5 @@ export function useGameBoardController({
     currentFps,
     showFpsInfo,
     setShowFpsInfo,
-    perfDotClass,
-    hudBtnClass,
   };
 }

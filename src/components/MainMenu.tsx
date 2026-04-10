@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useGame } from "../store/gameStore";
+import { beginMatchFromUI } from "../store/matchSessionActions";
 import {
   MENU_MODE_CARD_CLASS,
   MENU_MODE_ITEMS,
@@ -12,11 +12,10 @@ interface MainMenuProps {
 }
 
 export function MainMenu({ onStartGame }: MainMenuProps) {
-  const beginMatch = useGame((s) => s.beginMatch);
   const [showRules, setShowRules] = useState(false);
 
   const handleSelectMode = (mode: GameMode) => {
-    beginMatch(mode);
+    beginMatchFromUI(mode);
     onStartGame();
   };
 

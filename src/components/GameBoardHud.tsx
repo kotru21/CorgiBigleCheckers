@@ -1,12 +1,25 @@
 import type { Position } from "@shared/types/game.types";
+import type { PerformanceMode } from "./Board3D/types";
+
+const HUD_BTN_CLASS =
+  "inline-flex h-8 min-h-8 shrink-0 items-center justify-center gap-1 rounded-full bg-black/45 px-2.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-zinc-100 shadow-sm backdrop-blur-md transition-[background-color,color] duration-200 cursor-pointer hover:bg-black/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/80 sm:px-3";
+
+function perfDotClassForMode(mode: PerformanceMode): string {
+  if (mode === "high") {
+    return "bg-zinc-400";
+  }
+  if (mode === "medium") {
+    return "bg-amber-400";
+  }
+  return "bg-red-500";
+}
 
 export interface GameBoardHudProps {
   gameMessage: string;
   showFpsInfo: boolean;
   onToggleFps: () => void;
   currentFps: number;
-  perfDotClass: string;
-  hudBtnClass: string;
+  performanceMode: PerformanceMode;
   onOpenRules: () => void;
   onOpenModeSelector: () => void;
   onReturnToMenu: () => void;
@@ -20,8 +33,7 @@ export function GameBoardHud({
   showFpsInfo,
   onToggleFps,
   currentFps,
-  perfDotClass,
-  hudBtnClass,
+  performanceMode,
   onOpenRules,
   onOpenModeSelector,
   onReturnToMenu,
@@ -29,6 +41,8 @@ export function GameBoardHud({
   gameOver,
   selectedPiece,
 }: GameBoardHudProps) {
+  const perfDotClass = perfDotClassForMode(performanceMode);
+
   return (
     <div className="pointer-events-none absolute inset-0 z-20 flex flex-col">
       <div className="safe-pt safe-px flex w-full shrink-0 items-center gap-1.5 pt-1.5 sm:gap-2 sm:pt-2">
@@ -42,7 +56,7 @@ export function GameBoardHud({
         <div className="pointer-events-auto ml-auto flex h-8 min-h-8 shrink-0 items-center justify-center gap-1.5">
           <button
             type="button"
-            className={`${hudBtnClass} ${showFpsInfo ? "text-cyan-200" : ""}`}
+            className={`${HUD_BTN_CLASS} ${showFpsInfo ? "text-cyan-200" : ""}`}
             onClick={onToggleFps}
             aria-pressed={showFpsInfo}
             title="Производительность / FPS">
@@ -57,21 +71,21 @@ export function GameBoardHud({
           <button
             type="button"
             onClick={onOpenRules}
-            className={hudBtnClass}
+            className={HUD_BTN_CLASS}
             title="Правила">
             ?
           </button>
           <button
             type="button"
             onClick={onOpenModeSelector}
-            className={hudBtnClass}
+            className={HUD_BTN_CLASS}
             title="Сменить режим">
             Режим
           </button>
           <button
             type="button"
             onClick={onReturnToMenu}
-            className={`${hudBtnClass} text-cyan-200`}
+            className={`${HUD_BTN_CLASS} text-cyan-200`}
             title="В главное меню">
             Меню
           </button>

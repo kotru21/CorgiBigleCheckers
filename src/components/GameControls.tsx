@@ -1,10 +1,8 @@
-import { useGame } from "../store/gameStore";
+import { restartMatchFromUI } from "../store/matchSessionActions";
 
 export function GameControls() {
-  const restartMatch = useGame((s) => s.restartMatch);
-
   const handleRestart = () => {
-    restartMatch();
+    restartMatchFromUI();
   };
 
   return (

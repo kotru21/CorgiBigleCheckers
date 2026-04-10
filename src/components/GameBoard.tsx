@@ -37,8 +37,7 @@ export function GameBoard({ onReturnToMenu }: GameBoardProps) {
         showFpsInfo={ctrl.showFpsInfo}
         onToggleFps={() => ctrl.setShowFpsInfo((prev) => !prev)}
         currentFps={ctrl.currentFps}
-        perfDotClass={ctrl.perfDotClass}
-        hudBtnClass={ctrl.hudBtnClass}
+        performanceMode={ctrl.performanceMode}
         onOpenRules={() => setShowRules(true)}
         onOpenModeSelector={() => setModeSelectorOpen(true)}
         onReturnToMenu={ctrl.handleReturnToMenu}
