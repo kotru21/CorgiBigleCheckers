@@ -154,7 +154,7 @@ export function Board3D({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       onCreated={({ gl }) => {
         gl.shadowMap.enabled = true;
-        gl.shadowMap.type = THREE.PCFSoftShadowMap;
+        gl.shadowMap.type = THREE.PCFShadowMap;
         gl.outputColorSpace = THREE.SRGBColorSpace;
       }}>
       <Board3DContent
