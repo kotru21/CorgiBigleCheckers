@@ -11,7 +11,7 @@ import { GAME_CONFIG, GAME_MODES } from "@shared/config/constants";
 import { logger } from "../utils/logger";
 import { getPlayerTurnPromptMessage } from "../utils/modeHelpers";
 import type { Board } from "@shared/types/game.types";
-import type { PieceAnimationInfo } from "../components/Board3D";
+import type { PieceAnimationInfo } from "@shared/types/pieceAnimation.types";
 
 interface UseBotAIProps {
   setCurrentAnimation: (animation: PieceAnimationInfo | null) => void;

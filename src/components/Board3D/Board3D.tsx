@@ -13,7 +13,8 @@ import {
   ContactShadows,
 } from "@react-three/drei";
 import { PieceMesh } from "./PieceMesh";
-import { EMPTY, GAME_MODES } from "@shared/config/constants";
+import { buildPieceDescriptors } from "./buildPieceDescriptors";
+import { GAME_MODES } from "@shared/config/constants";
 import {
   BoardFrame,
   PerformanceMonitor,
@@ -57,42 +58,30 @@ function Board3DContent({
     onPieceSelect,
   });
 
+  const pieceDescriptors = useMemo(
+    () => buildPieceDescriptors(board, selectedPiece, currentAnimation ?? null),
+    [board, selectedPiece, currentAnimation]
+  );
+
   const renderPieces = useMemo<ReactElement[]>(
     () =>
-      board.flatMap((row, rowIndex) =>
-        row.flatMap((cell, colIndex) => {
-          if (cell === EMPTY) {
-            return [];
+      pieceDescriptors.map((d) => (
+        <PieceMesh
+          key={d.key}
+          type={d.type}
+          isKing={d.isKing}
+          boardRow={d.boardRow}
+          boardCol={d.boardCol}
+          onClick={() => onPieceSelect(d.boardRow, d.boardCol)}
+          isSelected={
+            selectedPiece?.row === d.boardRow && selectedPiece?.col === d.boardCol
           }
-
-          const type = cell.includes("beagle") ? "beagle" : "corgi";
-          const isKing = cell.includes("-king");
-
-          // Определяем, анимируется ли эта фигура
-          const isAnimating =
-            currentAnimation &&
-            currentAnimation.fromRow === rowIndex &&
-            currentAnimation.fromCol === colIndex;
-
-          return [
-            <PieceMesh
-              key={`piece-${rowIndex}-${colIndex}`}
-              type={type}
-              isKing={isKing}
-              boardRow={rowIndex}
-              boardCol={colIndex}
-              onClick={() => onPieceSelect(rowIndex, colIndex)}
-              isSelected={
-                selectedPiece?.row === rowIndex &&
-                selectedPiece?.col === colIndex
-              }
-              gameMode={gameMode}
-              animationId={isAnimating ? currentAnimation.animationId : null}
-            />,
-          ];
-        })
-      ),
-    [board, selectedPiece, onPieceSelect, gameMode, currentAnimation]
+          gameMode={gameMode}
+          animationId={d.animationId}
+          pointerTarget={d.pointerTarget}
+        />
+      )),
+    [pieceDescriptors, selectedPiece, onPieceSelect, gameMode]
   );
 
   return (

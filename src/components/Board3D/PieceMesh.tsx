@@ -37,6 +37,8 @@ interface PieceMeshProps {
   isSelected: boolean;
   gameMode: GameMode;
   animationId?: string | null;
+  /** Клетка принимает клики игрока (раньше: только type === "beagle"). */
+  pointerTarget: boolean;
 }
 
 export function PieceMesh({
@@ -48,6 +50,7 @@ export function PieceMesh({
   isSelected,
   gameMode,
   animationId,
+  pointerTarget,
 }: PieceMeshProps) {
   const groupRef = useRef<THREE.Group | null>(null);
   const [hovered, setHovered] = useState(false);
@@ -104,9 +107,10 @@ export function PieceMesh({
       return;
     }
 
-    if (type === "beagle") {
-      onClick();
+    if (!pointerTarget) {
+      return;
     }
+    onClick();
   };
 
   const modelRotation: [number, number, number] =
@@ -115,12 +119,12 @@ export function PieceMesh({
   return (
     <group
       ref={groupRef}
-      scale={hovered && type === "beagle" ? scale * 1.1 : scale}>
+      scale={hovered && pointerTarget ? scale * 1.1 : scale}>
       <mesh
         onClick={handleClick}
         onPointerOver={(event) => {
           event.stopPropagation();
-          if (type === "beagle" && !isMoving) {
+          if (pointerTarget && !isMoving) {
             setHovered(true);
           }
         }}
@@ -149,7 +153,7 @@ export function PieceMesh({
         />
       )}
 
-      {(isSelected || hovered) && type === "beagle" && (
+      {(isSelected || hovered) && pointerTarget && (
         <pointLight
           position={[0, 0.5, 0]}
           intensity={isSelected ? 0.4 : 0.2}
@@ -163,14 +167,14 @@ export function PieceMesh({
           <pointLight
             position={[0, 0.8, 0]}
             intensity={0.4}
-            color={type === "beagle" ? "#00BFFF" : "#FF69B4"}
+            color={pointerTarget ? "#00BFFF" : "#FF69B4"}
             distance={1.8}
           />
           <Sparkles
-            count={type === "beagle" ? 40 : 25}
+            count={pointerTarget ? 40 : 25}
             speed={1.2}
             size={2.4}
-            color={type === "beagle" ? "#00BFFF" : "#FF69B4"}
+            color={pointerTarget ? "#00BFFF" : "#FF69B4"}
             opacity={0.6}
             scale={[1.1, 1.1, 1.1]}
           />

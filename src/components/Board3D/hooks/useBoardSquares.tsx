@@ -5,6 +5,7 @@ import { GAME_MODES } from "@shared/config/constants";
 import * as THREE from "three";
 import type { Position, Move, GameMode } from "@shared/types/game.types";
 import type { CaptureInfo, BoardRenderer } from "../types";
+import { getSquareInteractionFlags } from "../../../game/squareVisualState";
 
 interface UseBoardSquaresParams {
   selectedPiece: Position | null;
@@ -45,19 +46,20 @@ export function useBoardSquares({
 
     for (let row = 0; row < 10; row++) {
       for (let col = 0; col < 10; col++) {
-        const isEven = (row + col) % 2 === 0;
-        const isDarkSquare = !isEven;
-        const isSelected =
-          selectedPiece?.row === row && selectedPiece?.col === col;
-        const isValidMove = validMoves?.some(
-          (move) => move.row === row && move.col === col
-        );
-        const isHovered =
-          hoveredSquare?.row === row && hoveredSquare?.col === col;
-
-        const hasCapturePiece = piecesWithCaptures.some(
-          (piece) => piece.row === row && piece.col === col
-        );
+        const flags = getSquareInteractionFlags(row, col, {
+          selectedPiece,
+          validMoves,
+          piecesWithCaptures,
+          hoveredSquare,
+        });
+        const isEven = !flags.isDarkSquare;
+        const {
+          isDarkSquare,
+          isSelected,
+          isValidMove,
+          hasCapturePiece,
+          isHovered,
+        } = flags;
 
         const material = new THREE.MeshStandardMaterial({
           map: isEven ? lightSquareTexture : darkSquareTexture,

@@ -1,5 +1,8 @@
 import type { ReactElement } from "react";
 import type { Board, GameMode, Move, Position } from "@shared/types/game.types";
+import type { PieceAnimationInfo } from "@shared/types/pieceAnimation.types";
+
+export type { PieceAnimationInfo };
 
 export type PerformanceMode = "high" | "medium" | "low";
 
@@ -19,14 +22,6 @@ export interface BoardProps {
 export interface SkyWithCloudsAndSunProps {
   performanceMode: PerformanceMode;
   gameMode: GameMode;
-}
-
-export interface PieceAnimationInfo {
-  fromRow: number;
-  fromCol: number;
-  toRow: number;
-  toCol: number;
-  animationId: string;
 }
 
 export interface Board3DContentProps {
