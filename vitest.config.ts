@@ -4,11 +4,11 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    include: ["tests/**/*.test.ts"],
   },
   resolve: {
     alias: {
-      "@shared": path.resolve(import.meta.dirname, "src/shared"),
+      "@": path.resolve(import.meta.dirname, "src"),
     },
   },
 });

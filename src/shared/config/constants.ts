@@ -1,8 +1,7 @@
-export const BOARD_SIZE = 10 as const;
-export const PLAYER = "beagle" as const;
-export const BOT = "corgi" as const;
-export const PLAYER_KING = "beagle-king" as const;
-export const BOT_KING = "corgi-king" as const;
+export const BEAGLE = "beagle" as const;
+export const CORGI = "corgi" as const;
+export const BEAGLE_KING = "beagle-king" as const;
+export const CORGI_KING = "corgi-king" as const;
 export const EMPTY: null = null;
 
 export const GAME_MODES = {
@@ -12,75 +11,39 @@ export const GAME_MODES = {
   TURBO: "turbo",
 } as const;
 
-export const MOVE_TYPES = {
-  NORMAL: "normal",
-  CAPTURE: "capture",
-  MULTI_CAPTURE: "multi_capture",
+export const VARIANTS = {
+  INTERNATIONAL: "international",
+  RUSSIAN: "russian",
 } as const;
 
-export const PERFORMANCE_MODES = {
-  HIGH: "high",
+export const DIFFICULTIES = {
+  EASY: "easy",
   MEDIUM: "medium",
-  LOW: "low",
+  HARD: "hard",
 } as const;
 
-export const DIRECTIONS = {
-  PLAYER: [
-    [-1, -1],
-    [-1, 1],
-  ],
-  BOT: [
-    [1, -1],
-    [1, 1],
-  ],
-  KING: [
-    [-1, -1],
-    [-1, 1],
-    [1, -1],
-    [1, 1],
-  ],
+export interface AiPreset {
+  maxDepth: number;
+  timeLimitMs: number;
+  randomMargin: number;
+}
+
+export const AI_PRESETS = {
+  easy: { maxDepth: 2, timeLimitMs: 300, randomMargin: 80 },
+  medium: { maxDepth: 4, timeLimitMs: 700, randomMargin: 15 },
+  hard: { maxDepth: 12, timeLimitMs: 1500, randomMargin: 1 },
+  hint: { maxDepth: 12, timeLimitMs: 1000, randomMargin: 0 },
+} as const satisfies Record<string, AiPreset>;
+
+export const BOT_TIMING = {
+  THINK_DELAY_MS: 700,
+  TURBO_THINK_DELAY_MS: 150,
 } as const;
 
-export const GAME_CONFIG = {
-  AI_DEPTH: {
-    EASY: 2,
-    MEDIUM: 3,
-    HARD: 4,
-    TURBO: 4,
-  },
-  AI_DELAY: {
-    TURBO: 300,
-    NORMAL: 1000,
-  },
-  PIECE_VALUES: {
-    REGULAR: 10,
-    KING: 30,
-  },
-  BOARD: {
-    SIZE: BOARD_SIZE,
-    DARK_SQUARES_ONLY: true,
-  },
-  PERFORMANCE: {
-    CACHE_SIZE_LIMIT: 1000,
-    FPS_TARGET: 60,
-    FPS_WARNING_THRESHOLD: 30,
-    FPS_CRITICAL_THRESHOLD: 15,
-    /** Ниже этого FPS включается режим medium (если ≥ FPS_LOW_BAND). */
-    FPS_MEDIUM_BAND: 40,
-    /** Ниже этого FPS включается режим low. */
-    FPS_LOW_BAND: 20,
-  },
-} as const;
-
-export const VALIDATION_RULES = {
-  MIN_BOARD_SIZE: 8,
-  MAX_BOARD_SIZE: 12,
-  MIN_PIECES_PER_SIDE: 12,
-  MAX_PIECES_PER_SIDE: 20,
-} as const;
-
-export const LOG_CONFIG = {
-  ENABLED: true,
-  LEVEL: "INFO",
-  MAX_LOGS: 1000,
+export const PERFORMANCE_CONFIG = {
+  SAMPLE_INTERVAL_MS: 500,
+  DOWNGRADE_BELOW: { high: 40, medium: 20 },
+  UPGRADE_ABOVE: { low: 35, medium: 52 },
+  DOWNGRADE_SAMPLES: 2,
+  UPGRADE_SAMPLES: 8,
 } as const;

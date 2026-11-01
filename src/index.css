@@ -301,7 +301,6 @@ button {
     background-color: #f4f4f5;
     --color-bg-deep: #f4f4f5;
     --color-bg-elevated: #ffffff;
-    --color-surface: rgba(255, 255, 255, 0.96);
     --color-border: rgba(212, 212, 216, 0.95);
     --color-accent: #ea580c;
     --color-accent-dim: rgba(234, 88, 12, 0.12);

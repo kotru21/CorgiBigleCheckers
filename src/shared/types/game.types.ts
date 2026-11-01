@@ -8,36 +8,26 @@ export interface Position {
   col: number;
 }
 
-export interface CaptureStep {
-  row: number;
-  col: number;
-  capturedRow: number;
-  capturedCol: number;
-}
-
-export interface Move extends Position {
-  capturedPieces?: number;
-  path?: CaptureStep[];
-  capturedRow?: number;
-  capturedCol?: number;
+export interface PieceMove {
+  from: Position;
+  path: Position[];
+  captures: Position[];
+  promotes?: boolean;
 }
 
 export type Board = PieceType[][];
 
 export type GameMode = "classic" | "crazy_jumps" | "party_mode" | "turbo";
 
-export interface MinimaxResult {
-  move: {
-    fromRow: number;
-    fromCol: number;
-    toRow: number;
-    toCol: number;
-    isCapture?: boolean;
-    mustCapture?: boolean;
-  } | null;
-  score: number;
-}
+export type Variant = "international" | "russian";
 
-export interface EvaluationScore {
-  score: number;
-}
+export type Opponent = "bot" | "human";
+
+export type Difficulty = "easy" | "medium" | "hard";
+
+export type DrawReason =
+  "repetition" | "kingMoves" | "endgame16" | "endgame15" | "endgame5";
+
+export type MatchResult =
+  | { kind: "win"; winner: Player; byResignation?: boolean }
+  | { kind: "draw"; reason: DrawReason };
