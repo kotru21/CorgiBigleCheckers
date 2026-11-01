@@ -1,3 +1,4 @@
+/* oxlint-disable no-console */
 const LOG_LEVELS = {
   ERROR: 0,
   WARN: 1,
@@ -5,12 +6,10 @@ const LOG_LEVELS = {
   DEBUG: 3,
 } as const;
 
-type LogLevelKey = keyof typeof LOG_LEVELS;
-
-type LogLevelValue = (typeof LOG_LEVELS)[LogLevelKey];
+type LogLevelValue = (typeof LOG_LEVELS)[keyof typeof LOG_LEVELS];
 
 class Logger {
-  constructor(private level: LogLevelValue = LOG_LEVELS.INFO) {}
+  constructor(private level: LogLevelValue) {}
 
   error(message: string, ...args: unknown[]) {
     if (this.level >= LOG_LEVELS.ERROR) {
@@ -26,16 +25,20 @@ class Logger {
 
   info(message: string, ...args: unknown[]) {
     if (this.level >= LOG_LEVELS.INFO) {
-      console.warn(`[INFO] ${message}`, ...args);
+      console.info(`[INFO] ${message}`, ...args);
     }
   }
 
   debug(message: string, ...args: unknown[]) {
     if (this.level >= LOG_LEVELS.DEBUG) {
-      console.warn(`[DEBUG] ${message}`, ...args);
+      console.debug(`[DEBUG] ${message}`, ...args);
     }
   }
 }
 
-export const logger = new Logger(LOG_LEVELS.INFO);
-export { LOG_LEVELS };
+const level =
+  import.meta.env.DEV && import.meta.env.MODE !== "test"
+    ? LOG_LEVELS.INFO
+    : LOG_LEVELS.WARN;
+
+export const logger = new Logger(level);
