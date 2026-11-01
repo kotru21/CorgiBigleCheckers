@@ -4,7 +4,7 @@
     "react"
   ],
   "categories": {
-    "correctness": "off"
+    "correctness": "error"
   },
   "env": {
     "builtin": true
@@ -166,6 +166,17 @@
         "browser": true,
         "es2024": true
       }
+    },
+    {
+      "files": [
+        "tests/**"
+      ],
+      "rules": {
+        "typescript/no-non-null-assertion": "off"
+      },
+      "plugins": [
+        "typescript"
+      ]
     }
   ]
 }
