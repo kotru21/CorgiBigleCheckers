@@ -1,5 +1,5 @@
-import { GAME_MODES } from "@shared/config/constants";
-import type { SimpleEnvironmentProps } from "../types";
+import { GAME_MODES } from "@/shared/config/constants";
+import type { SimpleEnvironmentProps } from "@/scene/types";
 
 export function SimpleEnvironment({ gameMode }: SimpleEnvironmentProps) {
   if (gameMode === GAME_MODES.PARTY_MODE) {

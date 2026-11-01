@@ -1,5 +1,3 @@
-import type { EasingFunction } from "../types";
-
 export const easings = {
   linear: (t: number): number => t,
   easeOutCubic: (t: number): number => 1 - Math.pow(1 - t, 3),
@@ -32,12 +30,10 @@ export const easings = {
   easeOutExpo: (t: number): number => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
 } as const;
 
-/** Linear interpolation */
 export function lerp(start: number, end: number, t: number): number {
   return start + (end - start) * t;
 }
 
-/** Frame-rate independent smooth interpolation */
 export function damp(
   current: number,
   target: number,
@@ -46,19 +42,4 @@ export function damp(
 ): number {
   const factor = 1 - Math.exp(-speed * delta);
   return current + (target - current) * factor;
-}
-
-export function dampWithEasing(
-  current: number,
-  target: number,
-  speed: number,
-  delta: number,
-  easing: EasingFunction = easings.easeOutCubic
-): number {
-  const diff = target - current;
-  const absDiff = Math.abs(diff);
-  const normalizedProgress = 1 - Math.min(1, absDiff);
-  const easedSpeed = speed * (1 + easing(normalizedProgress));
-
-  return damp(current, target, easedSpeed, delta);
 }

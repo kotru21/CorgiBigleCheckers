@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState } from "react";
 import { type ThreeEvent } from "@react-three/fiber";
-import { usePieceAnimation } from "../../features/animation";
+import { usePieceAnimation } from "@/scene/animation/usePieceAnimation";
 import { useGLTF, Sparkles } from "@react-three/drei";
-import { GAME_MODES } from "@shared/config/constants";
+import { GAME_MODES } from "@/shared/config/constants";
 import * as THREE from "three";
-import type { GameMode } from "@shared/types/game.types";
+import type { GameMode } from "@/shared/types/game.types";
 
 type PieceKind = "beagle" | "corgi";
 
@@ -32,12 +32,12 @@ interface PieceMeshProps {
   type: PieceKind;
   boardRow: number;
   boardCol: number;
+  boardSize: number;
   isKing: boolean;
   onClick: () => void;
   isSelected: boolean;
   gameMode: GameMode;
   animationId?: string | null;
-  /** Клетка принимает клики игрока (раньше: только type === "beagle"). */
   pointerTarget: boolean;
 }
 
@@ -45,6 +45,7 @@ export function PieceMesh({
   type,
   boardRow,
   boardCol,
+  boardSize,
   isKing,
   onClick,
   isSelected,
@@ -55,15 +56,15 @@ export function PieceMesh({
   const groupRef = useRef<THREE.Group | null>(null);
   const [hovered, setHovered] = useState(false);
 
-  // Используем комплексную систему анимаций
   const { isMoving } = usePieceAnimation({
     boardRow,
     boardCol,
+    boardSize,
     isSelected,
     isHovered: hovered,
     animationId,
     groupRef,
-    pieceType: type,
+    interactive: pointerTarget,
   });
 
   const { scene: pieceScene } = useGLTF(`/models/${type}.glb`) as GLTFResult;
@@ -95,14 +96,11 @@ export function PieceMesh({
     return clone;
   }, [crownScene]);
 
-  // Все анимации теперь управляются в usePieceAnimation
-
   const scale = type === "corgi" ? 0.4 : 0.43;
 
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
 
-    // Не позволяем кликать во время анимации
     if (isMoving) {
       return;
     }

@@ -1,10 +1,10 @@
 import { Sky, Sparkles } from "@react-three/drei";
-import { GAME_MODES } from "@shared/config/constants";
+import { GAME_MODES } from "@/shared/config/constants";
 import * as THREE from "three";
 import { Sun } from "./Sun";
 import { EnhancedClouds } from "./EnhancedClouds";
 import { EnhancedDiscoBalls } from "./DiscoBall";
-import type { SkyWithCloudsAndSunProps } from "../types";
+import type { SkyWithCloudsAndSunProps } from "@/scene/types";
 
 export function SkyWithCloudsAndSun({
   performanceMode,
@@ -76,7 +76,7 @@ export function SkyWithCloudsAndSun({
           mieCoefficient={0.003}
           mieDirectionalG={0.9}
         />
-        <Sun />
+        <Sun performanceMode={performanceMode} />
       </>
     );
   }
@@ -93,8 +93,8 @@ export function SkyWithCloudsAndSun({
         mieCoefficient={0.003}
         mieDirectionalG={0.9}
       />
-      <Sun />
-      <EnhancedClouds count={100} />
+      <Sun performanceMode={performanceMode} />
+      <EnhancedClouds count={16} />
     </>
   );
 }

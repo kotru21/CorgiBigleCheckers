@@ -1,18 +1,13 @@
-import { useThree } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
-import type { PerformanceMode } from "../types";
+import type { SunProps } from "@/scene/types";
 
-export function Sun() {
-  const sunPosition: [number, number, number] = [100, 100, -100];
-  const { performanceMode } = useThree((state) => ({
-    performanceMode: (state.performance?.current ??
-      "high") as unknown as PerformanceMode,
-  }));
+const SUN_POSITION: [number, number, number] = [100, 100, -100];
 
+export function Sun({ performanceMode }: SunProps) {
   if (performanceMode === "low") {
     return (
       <directionalLight
-        position={sunPosition}
+        position={SUN_POSITION}
         intensity={3}
         color="#FFFACD"
         castShadow
@@ -21,7 +16,7 @@ export function Sun() {
   }
 
   return (
-    <group position={sunPosition}>
+    <group position={SUN_POSITION}>
       <mesh>
         <sphereGeometry args={[15, 32, 32]} />
         <meshBasicMaterial color="#FDB813" />

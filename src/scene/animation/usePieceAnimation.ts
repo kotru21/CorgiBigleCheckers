@@ -1,24 +1,29 @@
 import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
-import type { Position3D } from "../types";
-import { damp, easings } from "../lib/easings";
+import type { Position3D } from "./types";
+import { damp, easings } from "./easings";
 import {
   interpolatePosition,
   interpolateJumpPosition,
   calculateProgress,
   boardToWorld,
-} from "../lib/interpolation";
-import { useAnimationStore, ANIMATION_CONFIG } from "../store/animationStore";
+} from "./interpolation";
+import { useAnimationStore } from "@/match/animationStore";
+
+const JUMP_HEIGHT = 0.8;
+const SELECTION_HEIGHT = 0.3;
+const HOVER_HEIGHT = 0.15;
 
 interface UsePieceAnimationProps {
   boardRow: number;
   boardCol: number;
+  boardSize: number;
   isSelected: boolean;
   isHovered: boolean;
   animationId?: string | null | undefined;
   groupRef: React.RefObject<THREE.Group | null>;
-  pieceType: "beagle" | "corgi";
+  interactive: boolean;
 }
 
 interface UsePieceAnimationResult {
@@ -41,13 +46,14 @@ const THRESHOLDS = {
 export function usePieceAnimation({
   boardRow,
   boardCol,
+  boardSize,
   isSelected,
   isHovered,
   animationId,
   groupRef,
-  pieceType,
+  interactive,
 }: UsePieceAnimationProps): UsePieceAnimationResult {
-  const targetWorldPos = boardToWorld(boardRow, boardCol);
+  const targetWorldPos = boardToWorld(boardRow, boardCol, boardSize);
   const [isMoving, setIsMoving] = useState(false);
 
   const currentHeightRef = useRef(0);
@@ -60,9 +66,7 @@ export function usePieceAnimation({
   const animationProgressRef = useRef(0);
   const spinAccumulatorRef = useRef(0);
 
-  const { getAnimatingPiece, completeAnimation } = useAnimationStore();
-
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (!groupRef.current) {
       return;
     }
@@ -70,11 +74,11 @@ export function usePieceAnimation({
     const group = groupRef.current;
 
     let targetHeight = 0;
-    if (pieceType === "beagle") {
+    if (interactive) {
       if (isSelected && !isMoving) {
-        targetHeight = ANIMATION_CONFIG.selectionHeight;
+        targetHeight = SELECTION_HEIGHT;
       } else if (isHovered && !isMoving) {
-        targetHeight = ANIMATION_CONFIG.hoverHeight;
+        targetHeight = HOVER_HEIGHT;
       }
     }
 
@@ -90,10 +94,14 @@ export function usePieceAnimation({
       currentHeightRef.current = targetHeight;
     }
 
-    // Movement animation
     if (animationId) {
-      const animation = getAnimatingPiece(animationId);
-      if (animation) {
+      const { activeMove, completeAnimation } = useAnimationStore.getState();
+      if (activeMove?.id === animationId) {
+        const animation = {
+          ...activeMove,
+          from: boardToWorld(activeMove.fromRow, activeMove.fromCol, boardSize),
+          to: boardToWorld(activeMove.toRow, activeMove.toCol, boardSize),
+        };
         const progress = calculateProgress(
           animation.startTime,
           animation.duration,
@@ -109,7 +117,7 @@ export function usePieceAnimation({
             animation.from,
             animation.to,
             progress,
-            ANIMATION_CONFIG.jumpHeight,
+            JUMP_HEIGHT,
             easings.easeInOutCubic
           );
         } else {
@@ -158,12 +166,11 @@ export function usePieceAnimation({
       }
     }
 
-    // Idle state
     group.position.x = targetWorldPos.x;
     group.position.y = currentHeightRef.current;
     group.position.z = targetWorldPos.z;
 
-    if (pieceType === "beagle" && (isSelected || isHovered)) {
+    if (interactive && (isSelected || isHovered)) {
       const spinSpeed = isSelected ? 1.0 : 0.5;
       spinAccumulatorRef.current += delta * spinSpeed;
       targetRotationYRef.current = spinAccumulatorRef.current;

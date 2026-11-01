@@ -1,4 +1,4 @@
-import type { Position3D, EasingFunction } from "../types";
+import type { Position3D, EasingFunction } from "./types";
 import { easings } from "./easings";
 
 export function interpolatePosition(
@@ -16,7 +16,6 @@ export function interpolatePosition(
   };
 }
 
-/** Параболическая траектория для прыжка при взятии */
 export function interpolateJumpPosition(
   from: Position3D,
   to: Position3D,
@@ -46,27 +45,12 @@ export function calculateProgress(
   return Math.min(1, Math.max(0, elapsed / duration));
 }
 
-export function generateAnimationId(fromRow: number, fromCol: number): string {
-  return `piece-${fromRow}-${fromCol}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-}
-
-/** Board position (row, col) -> World position (x, y, z) */
 export function boardToWorld(
   row: number,
   col: number,
+  size: number,
   y: number = 0
 ): Position3D {
-  return {
-    x: row - 4.5,
-    y,
-    z: col - 4.5,
-  };
-}
-
-/** World position -> Board position */
-export function worldToBoard(pos: Position3D): { row: number; col: number } {
-  return {
-    row: Math.round(pos.x + 4.5),
-    col: Math.round(pos.z + 4.5),
-  };
+  const offset = (size - 1) / 2;
+  return { x: row - offset, y, z: col - offset };
 }
