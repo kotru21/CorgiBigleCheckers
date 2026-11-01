@@ -88,7 +88,7 @@ export function useGameBoardController({
   useBotAI({ setCurrentAnimation });
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- сброс оверлея при смене доски (режим/рестарт из стора)
+    // oxlint-disable-next-line react/set-state-in-effect -- сброс оверлея при смене доски (режим/рестарт из стора)
     setCurrentAnimation(null);
   }, [board]);
 

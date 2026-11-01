@@ -1,9 +1,5 @@
 export type PieceType =
-  | "beagle"
-  | "corgi"
-  | "beagle-king"
-  | "corgi-king"
-  | null;
+  "beagle" | "corgi" | "beagle-king" | "corgi-king" | null;
 
 export type Player = "beagle" | "corgi";
 

@@ -33,8 +33,8 @@
 - `npm run build` — прод-сборка Vite.
 - `npm run preview` — предпросмотр собранной версии.
 - `npm run test` / `npm run test:watch` — unit-тесты (Vitest).
-- `npm run lint` — проверка ESLint.
-- `npm run lint:fix` — ESLint с автоисправлением.
+- `npm run lint` — проверка oxlint.
+- `npm run lint:fix` — oxlint с автоисправлением.
 - `npm run typecheck` — проверка типов (`tsc --noEmit`).
 - `npm run format` / `npm run format:check` — форматирование Prettier и проверка стиля.
 
